@@ -1,0 +1,3415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Debate Club from Hell</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=New+Rocker&family=Syne+Mono&family=VT323&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Reset & base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:          #f5f0e8;
+      --bg-card:     #fffdf7;
+      --bg-dark:     #1a1410;
+      --text:        #1a1410;
+      --text-muted:  #6b5f4e;
+      --text-faint:  #a0917e;
+      --border:      rgba(26,20,16,0.15);
+      --border-md:   rgba(26,20,16,0.25);
+      --accent:      #7a3b1e;
+      --accent-soft: #f0e4d4;
+      --judge-bg:    #eeedfe;
+      --judge-text:  #3c3489;
+      --you-bg:      #e1f5ee;
+      --you-text:    #085041;
+      --radius-md:   8px;
+      --radius-lg:   12px;
+    }
+
+    body {
+      font-family: 'Syne Mono', monospace;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 2rem 1rem 4rem;
+    }
+
+    /* ── Layout ── */
+    .court-wrap {
+      width: 100%;
+      max-width: 680px;
+    }
+
+    /* ── Header ── */
+    .court-header {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 0.5px solid var(--border-md);
+    }
+
+    .court-title {
+      font-family: 'New Rocker', serif;
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      color: var(--text);
+    }
+
+    .court-subtitle {
+      font-size: 15px;
+      color: var(--text-muted);
+      font-style: italic;
+      margin-top: 4px;
+    }
+
+    /* ── Status bar ── */
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .round-badge {
+      background: var(--bg-card);
+      border: 0.5px solid var(--border-md);
+      border-radius: var(--radius-md);
+      padding: 3px 12px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .score-display span {
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    /* ── Proposition card ── */
+    .proposition-card {
+      background: var(--bg-card);
+      border: 0.5px solid var(--border-md);
+      border-radius: var(--radius-lg);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1rem;
+    }
+
+    .prop-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-faint);
+      margin-bottom: 6px;
+    }
+
+    .prop-text {
+      font-family: 'New Rocker', serif;
+      font-size: 18px;
+      font-style: italic;
+      color: var(--text);
+      line-height: 1.4;
+    }
+
+    /* ── Transcript ── */
+    .transcript {
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      background: var(--bg-card);
+      overflow-y: auto;
+      max-height: 340px;
+      margin-bottom: 1rem;
+      scroll-behavior: smooth;
+    }
+
+    .transcript-inner {
+      padding: 1rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* ── Messages ── */
+    .message {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    .msg-avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 500;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .avatar-judge { background: var(--judge-bg); color: var(--judge-text); }
+    .avatar-you   { background: var(--you-bg);   color: var(--you-text);   }
+
+    .msg-content { flex: 1; }
+
+    .msg-name {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-faint);
+      margin-bottom: 3px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .msg-text {
+      font-size: 15px;
+      line-height: 1.65;
+      color: var(--text);
+    }
+
+    .score-pill {
+      display: inline-block;
+      background: var(--accent-soft);
+      border: 0.5px solid var(--border);
+      border-radius: 20px;
+      padding: 2px 10px;
+      font-size: 12px;
+      font-weight: 500;
+      margin-top: 5px;
+      color: var(--accent);
+    }
+
+    /* ── Thinking indicator ── */
+    .thinking {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 1rem 1.25rem;
+      font-size: 14px;
+      color: var(--text-faint);
+      font-style: italic;
+    }
+
+    .dot-pulse { display: flex; gap: 4px; }
+    .dot-pulse span {
+      width: 5px; height: 5px;
+      background: var(--text-faint);
+      border-radius: 50%;
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+    .dot-pulse span:nth-child(2) { animation-delay: 0.2s; }
+    .dot-pulse span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes pulse {
+      0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
+      40%           { opacity: 1;   transform: scale(1);   }
+    }
+
+    /* ── Input area ── */
+    .input-area {
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+    }
+
+    textarea {
+      flex: 1;
+      height: 72px;
+      padding: 10px 12px;
+      font-family: 'Syne Mono', monospace;
+      font-size: 15px;
+      line-height: 1.5;
+      resize: none;
+      overflow: hidden;
+      border: 0.5px solid var(--border-md);
+      border-radius: var(--radius-md);
+      background: var(--bg-card);
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(122,59,30,0.1);
+    }
+
+    textarea::placeholder {
+      color: var(--text-faint);
+      font-style: italic;
+    }
+
+    textarea:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .submit-btn {
+      padding: 0 20px;
+      height: 44px;
+      background: var(--text);
+      color: var(--bg);
+      border: none;
+      border-radius: var(--radius-md);
+      font-family: 'Syne Mono', monospace;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+      white-space: nowrap;
+      align-self: flex-end;
+    }
+
+    .submit-btn:hover:not(:disabled) { opacity: 0.8; }
+    .submit-btn:active:not(:disabled) { transform: scale(0.97); }
+    .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .char-count {
+      font-size: 12px;
+      color: var(--text-faint);
+      text-align: right;
+      margin-top: 4px;
+    }
+
+    .error-msg {
+      font-size: 13px;
+      color: #a32d2d;
+      margin-top: 6px;
+      min-height: 18px;
+    }
+
+    /* ── Verdict ── */
+    .verdict-card {
+      background: var(--bg-card);
+      border: 0.5px solid var(--border-md);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem 1.25rem;
+      text-align: center;
+      margin-top: 1rem;
+    }
+
+    .verdict-title {
+      font-family: 'New Rocker', serif;
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .verdict-score {
+      font-family: 'New Rocker', serif;
+      font-size: 42px;
+      font-weight: 400;
+      margin: 8px 0;
+      color: var(--accent);
+    }
+
+    .verdict-text {
+      font-size: 15px;
+      font-style: italic;
+      color: var(--text-muted);
+      line-height: 1.7;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    .new-case-btn {
+      width: 100%;
+      margin-top: 1rem;
+      padding: 12px;
+      background: transparent;
+      border: 0.5px solid var(--border-md);
+      border-radius: var(--radius-md);
+      font-family: 'Syne Mono', monospace;
+      font-size: 15px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .new-case-btn:hover {
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+
+    /* ── Intro screen ── */
+    .intro-overlay {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1rem;
+    }
+
+    .intro-title-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      opacity: 0;
+      transition: opacity 1.2s ease;
+    }
+
+    .intro-gavel {
+      font-size: 48px;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-8px); }
+    }
+
+    .intro-main-title {
+      font-family: 'New Rocker', serif;
+      font-size: clamp(32px, 8vw, 62px);
+      font-weight: 700;
+      color: #fff;
+      text-align: center;
+      letter-spacing: 0.04em;
+      line-height: 1.1;
+    }
+
+    .intro-main-sub {
+      font-family: 'VT323', monospace;
+      font-size: 20px;
+      color: #555;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    /* RPG dialog box */
+    .intro-dialog-box {
+      width: 100%;
+      max-width: 680px;
+      margin: 2rem auto 2rem;
+      border: 2px solid #fff;
+      background: #0d0d0d;
+      padding: 1.5rem 1.75rem 1.25rem;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .dialog-speaker {
+      display: none;
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      transform: translateY(-100%);
+      font-family: 'VT323', monospace;
+      font-size: 26px;
+      color: #000;
+      background: #fff;
+      padding: 4px 18px 3px;
+      letter-spacing: 0.1em;
+      white-space: nowrap;
+    }
+
+    @keyframes jitter {
+      0%   { transform: translate(0,    0);    }
+      30%  { transform: translate(2px, -1px);  }
+      60%  { transform: translate(1px,  -2px); }
+      90%  { transform: translate(2px,  1px);  }
+      100% { transform: translate(0,    0);    }
+    }
+    .letter-jitter {
+      display: inline-block;
+      animation: jitter 0.09s steps(1) infinite;
+    }
+
+    .intro-dialog-text {
+      font-family: 'Syne Mono', monospace;
+      font-size: 24px;
+      color: #e0e0e0;
+      line-height: 1.65;
+      min-height: 90px;
+      white-space: pre-wrap;
+    }
+
+    .intro-continue {
+      text-align: right;
+      color: #fff;
+      font-family: 'VT323', monospace;
+      font-size: 22px;
+      margin-top: 6px;
+      animation: blink 0.8s step-end infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0; }
+    }
+
+    .intro-menu {
+      display: none;
+      margin-top: 1rem;
+      font-family: 'VT323', monospace;
+      font-size: 28px;
+      line-height: 1.8;
+    }
+
+    .intro-menu-item {
+      color: #888;
+      cursor: pointer;
+      letter-spacing: 0.05em;
+      transition: color 0.1s;
+    }
+
+    .intro-menu-item.selected { color: #fff; }
+    .intro-menu-item:hover    { color: #fff; }
+
+    /* ── Timer ── */
+    .timer-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .timer-display {
+      font-family: 'New Rocker', serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      min-width: 28px;
+      text-align: right;
+      transition: color 0.2s;
+    }
+
+    .timer-display.urgent { color: #a32d2d; }
+
+    .char-count.over { color: #a32d2d; font-weight: 500; }
+
+    /* ── Choice overlay ── */
+    .choice-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 110;
+      align-items: flex-end;
+      justify-content: center;
+      padding-bottom: 340px;
+    }
+
+    .choice-overlay.active {
+      display: flex;
+    }
+
+    .choice-box {
+      border: 2px solid #fff;
+      background: #000;
+      padding: 1.25rem 2rem 1.5rem;
+      min-width: 280px;
+      max-width: 480px;
+    }
+
+    .choice-label {
+      font-family: 'VT323', monospace;
+      font-size: 15px;
+      color: #555;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .choice-item {
+      font-family: 'VT323', monospace;
+      font-size: 26px;
+      color: #888;
+      cursor: pointer;
+      letter-spacing: 0.04em;
+      line-height: 1.7;
+      transition: color 0.08s;
+      white-space: nowrap;
+    }
+
+    .choice-item.selected { color: #fff; }
+    .choice-item:hover    { color: #fff; }
+
+    /* ── Flash overlay ── */
+    .flash-overlay {
+      position: fixed;
+      inset: 0;
+      background: #fff;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 200;
+    }
+
+    /* ── Intro name input ── */
+    .intro-name-input {
+      display: none;
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid #fff;
+      color: #fff;
+      font-family: 'VT323', monospace;
+      font-size: 26px;
+      outline: none;
+      width: 100%;
+      margin-top: 10px;
+      padding: 4px 0;
+      caret-color: #fff;
+    }
+    .intro-name-input::placeholder { color: #444; }
+
+    /* ── Player badge + input wrap ── */
+    .input-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .player-badge {
+      display: none;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-faint);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      align-self: flex-start;
+    }
+  </style>
+  <style>
+    /* ════════════════════════════════════════
+       GAME SCREEN OVERRIDE — replaces old light-theme layout
+       ════════════════════════════════════════ */
+
+    body {
+      padding: 0;
+      background: #000;
+      overflow: hidden;
+    }
+
+    /* Full-viewport game screen */
+    .court-wrap {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      max-width: 100%;
+      background-image: url('bg/room.png');
+      background-size: cover;
+      background-position: center bottom;
+      display: flex;
+      flex-direction: column;
+      padding-top: env(safe-area-inset-top, 0px);
+    }
+
+    /* extra breathing room when running in a browser tab (not standalone/fullscreen) */
+    @media not all and (display-mode: fullscreen) and (display-mode: standalone) {
+      .court-wrap { padding-top: max(env(safe-area-inset-top, 0px), 28px); }
+    }
+
+    /* ── HUD ── */
+    .game-hud {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 28px;
+      background: rgba(0,0,0,0.78);
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+      font-family: 'VT323', monospace;
+      font-size: 24px;
+      color: #ccc;
+      z-index: 10;
+    }
+    .hud-round { color: #fff; }
+    .hud-score { color: #fff; }
+    #mute-btn {
+      position: fixed;
+      top: 10px;
+      right: 16px;
+      z-index: 150;
+      background: rgba(0,0,0,0.55);
+      border: 1px solid rgba(255,255,255,0.25);
+      color: #fff;
+      font-family: 'VT323', monospace;
+      font-size: 22px;
+      padding: 1px 12px 2px;
+      cursor: pointer;
+      letter-spacing: 0.05em;
+      transition: background 0.1s, color 0.1s;
+      line-height: 1;
+    }
+    #mute-btn:hover { background: rgba(255,255,255,0.15); }
+    #mute-btn.muted { color: #555; border-color: rgba(255,255,255,0.1); }
+    .hud-timer { display: flex; align-items: center; gap: 6px; }
+
+    /* Override old timer styles */
+    .timer-wrap { display: none; }
+    .timer-display {
+      font-family: 'New Rocker', serif;
+      font-size: 30px;
+      color: #fff;
+      min-width: 36px;
+      text-align: center;
+      transition: color 0.2s;
+    }
+    .timer-display.urgent {
+      color: #ff4444;
+      animation: urgentPulse 0.5s ease-in-out infinite alternate;
+    }
+    @keyframes urgentPulse {
+      from { opacity: 1; }
+      to   { opacity: 0.45; }
+    }
+    @keyframes timerFlash {
+      0%   { opacity: 0;   transform: scale(1.5); }
+      10%  { opacity: 1;   transform: scale(1);   }
+      65%  { opacity: 1;   transform: scale(1);   }
+      100% { opacity: 0;   transform: scale(0.8); }
+    }
+    @keyframes coinWordIn {
+      from { transform: scale(0.3); opacity: 0; }
+      to   { transform: scale(1);   opacity: 1; }
+    }
+    @keyframes scoreFloat {
+      0%   { opacity: 1; transform: translateX(-50%) translateY(0)   scale(1.15); }
+      60%  { opacity: 1; transform: translateX(-50%) translateY(-60px) scale(1);   }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-110px) scale(0.9); }
+    }
+    .score-float {
+      position: fixed;
+      bottom: 38%;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'Syne Mono', monospace;
+      font-size: 2.4rem;
+      font-weight: bold;
+      color: #ffe87c;
+      text-shadow: 0 0 18px #ff8c00, 0 2px 4px #000;
+      pointer-events: none;
+      z-index: 9999;
+      white-space: nowrap;
+      animation: scoreFloat 1.6s ease-out forwards;
+    }
+    @keyframes screenShake {
+      0%   { transform: translate(0,    0);     }
+      12%  { transform: translate(-7px,  3px);  }
+      25%  { transform: translate( 6px, -4px);  }
+      37%  { transform: translate(-5px,  5px);  }
+      50%  { transform: translate( 4px, -3px);  }
+      62%  { transform: translate(-3px,  2px);  }
+      75%  { transform: translate( 2px, -2px);  }
+      87%  { transform: translate(-1px,  1px);  }
+      100% { transform: translate(0,    0);     }
+    }
+
+    /* ── Scene (bg visible here, sprite, proposition) ── */
+    .game-scene {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* ── Proposition banner ── */
+    .proposition-banner {
+      position: absolute;
+      top: 24px;
+      left: 24px;
+      right: 260px;
+      background: rgba(4, 0, 12, 0.84);
+      border: 2px solid #fff;
+      padding: 18px 28px;
+      z-index: 2;
+    }
+    .proposition-banner .prop-label {
+      font-family: 'VT323', monospace;
+      font-size: 20px;
+      color: #777;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .proposition-banner .prop-text {
+      font-family: 'New Rocker', serif;
+      font-size: 30px;
+      color: #fff;
+      line-height: 1.3;
+      font-style: italic;
+    }
+    .curse-reminder {
+      font-family: 'VT323', monospace;
+      font-size: 17px;
+      color: #ff5555;
+      margin-top: 7px;
+      letter-spacing: 0.05em;
+    }
+
+    /* ── Judge sprite ── */
+    .judge-sprite {
+      position: absolute;
+      right: 140px;
+      bottom: -20px;
+      height: 52vh;
+      max-height: 320px;
+      width: auto;
+      object-fit: contain;
+      object-position: bottom;
+      z-index: 1;
+      image-rendering: pixelated;
+      transition: opacity 0.25s ease;
+      border: 3px solid rgba(255,255,255,0.75);
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.6), 4px 4px 0 rgba(0,0,0,0.5);
+    }
+
+    /* ── Judge dialog ── */
+    .game-dialog-area {
+      flex-shrink: 0;
+      padding-top: 100px;
+      position: relative;
+      max-width: 680px;
+      width: 100%;
+      margin: 0 auto;
+    }
+    .game-dialog-box {
+      background: #0d0d0d;
+      border-top: 2px solid #fff;
+      border-left: 2px solid #fff;
+      border-right: 2px solid #fff;
+      padding: 0.9rem 1.75rem 0.75rem;
+      min-height: 80px;
+      position: relative;
+      transition: min-height 0.35s ease;
+    }
+    .game-dialog-box.dialogue-mode {
+      min-height: 180px;
+    }
+    .game-dialog-speaker {
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      transform: translateY(-100%);
+      font-family: 'VT323', monospace;
+      font-size: 26px;
+      color: #000;
+      background: #fff;
+      padding: 4px 18px 3px;
+      letter-spacing: 0.1em;
+      white-space: nowrap;
+    }
+    .game-dialog-text {
+      font-family: 'Syne Mono', monospace;
+      font-size: 25px;
+      color: #e0e0e0;
+      line-height: 1.55;
+    }
+    .game-score-pill {
+      display: inline-block;
+      margin-top: 6px;
+      font-family: 'VT323', monospace;
+      font-size: 20px;
+      color: #999;
+      border: 1px solid #444;
+      padding: 1px 10px;
+    }
+
+    /* ── Thinking dots (dark) ── */
+    .dot-pulse { display: flex; gap: 5px; align-items: center; }
+    .dot-pulse span {
+      width: 6px; height: 6px;
+      background: #888;
+      border-radius: 50%;
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+    .dot-pulse span:nth-child(2) { animation-delay: 0.2s; }
+    .dot-pulse span:nth-child(3) { animation-delay: 0.4s; }
+
+    /* ── Player input ── */
+    .game-input-area {
+      flex-shrink: 0;
+      padding-top: 30px;
+      position: relative;
+      max-width: 680px;
+      width: 100%;
+      margin: 0 auto;
+    }
+    .game-input-box {
+      background: #0a0a0a;
+      border: 2px solid #fff;
+      padding: 0.75rem 1.75rem 0.75rem;
+      position: relative;
+    }
+    .game-input-speaker {
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      transform: translateY(-100%);
+      font-family: 'VT323', monospace;
+      font-size: 26px;
+      color: #000;
+      background: #fff;
+      padding: 4px 18px 3px;
+      letter-spacing: 0.1em;
+      white-space: nowrap;
+    }
+    .game-input-row {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+    }
+    .game-input-area textarea {
+      flex: 1;
+      height: 60px;
+      padding: 8px 12px;
+      font-family: 'Syne Mono', monospace;
+      font-size: 15px;
+      line-height: 1.5;
+      resize: none;
+      overflow: hidden;
+      border: 1px solid #3a3a3a;
+      border-radius: 0;
+      background: #111;
+      color: #e0e0e0;
+      outline: none;
+      transition: border-color 0.15s;
+      box-shadow: none;
+    }
+    .game-input-area textarea:focus { border-color: #888; }
+    .game-input-area textarea::placeholder { color: #3a3a3a; font-style: italic; }
+    .game-input-area textarea:disabled { opacity: 0.4; cursor: not-allowed; }
+    .game-input-area .submit-btn {
+      padding: 0 22px;
+      height: 44px;
+      background: #fff;
+      color: #000;
+      border: none;
+      border-radius: 0;
+      font-family: 'VT323', monospace;
+      font-size: 24px;
+      letter-spacing: 0.06em;
+      font-weight: normal;
+    }
+    .game-input-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-top: 4px;
+    }
+    .game-input-area .char-count {
+      font-family: 'VT323', monospace;
+      font-size: 18px;
+      color: #444;
+      text-align: right;
+      margin-top: 0;
+    }
+    .game-input-area .char-count.over { color: #a32d2d; }
+    .game-input-area .error-msg {
+      font-family: 'VT323', monospace;
+      font-size: 18px;
+      color: #ff4444;
+      margin-top: 0;
+      min-height: 22px;
+    }
+
+    /* ── Verdict overlay ── */
+    #verdict-section {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.9);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      padding: 2rem;
+    }
+    #verdict-section .verdict-card {
+      background: #0d0d0d;
+      border: 2px solid #fff;
+      border-radius: 0;
+      padding: 2rem 2.5rem;
+      text-align: center;
+      max-width: 520px;
+      width: 100%;
+      margin-top: 0;
+    }
+    #verdict-section .verdict-title {
+      font-family: 'New Rocker', serif;
+      font-size: 30px;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+    #verdict-section .verdict-score {
+      font-family: 'New Rocker', serif;
+      font-size: 52px;
+      color: #fff;
+      margin: 8px 0;
+    }
+    #verdict-section .verdict-text {
+      font-family: 'Syne Mono', monospace;
+      font-size: 13px;
+      color: #aaa;
+      line-height: 1.7;
+      font-style: italic;
+    }
+    #verdict-section .new-case-btn {
+      margin-top: 1.5rem;
+      padding: 10px 36px;
+      width: auto;
+      background: transparent;
+      border: 2px solid #fff;
+      border-radius: 0;
+      font-family: 'VT323', monospace;
+      font-size: 26px;
+      color: #fff;
+      letter-spacing: 0.08em;
+      transition: background 0.15s, color 0.15s;
+    }
+    #verdict-section .new-case-btn:hover {
+      background: #fff;
+      color: #000;
+    }
+
+    /* ── Scene title card ── */
+    .scene-card {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: #000;
+      z-index: 90;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+    }
+    .scene-card.active { display: flex; }
+    .scene-number {
+      font-family: 'New Rocker', serif;
+      font-size: clamp(38px, 9vw, 76px);
+      color: #fff;
+      letter-spacing: 0.08em;
+      opacity: 0;
+      transition: opacity 0.55s ease;
+    }
+    .scene-subtitle-text {
+      font-family: 'VT323', monospace;
+      font-size: 20px;
+      color: #555;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      opacity: 0;
+      transition: opacity 0.55s ease 0.25s;
+    }
+    .scene-number.vis, .scene-subtitle-text.vis { opacity: 1; }
+
+    /* ── Game UI: hidden until scene I dialogue ends ── */
+    .game-hud        { opacity: 0; pointer-events: none; transition: opacity 0.7s ease; }
+    .proposition-banner { opacity: 0; pointer-events: none; transition: opacity 0.7s ease 0.15s; }
+    .game-input-area { opacity: 0; pointer-events: none; transition: opacity 0.7s ease 0.3s; }
+    .game-hud.ui-vis,
+    .proposition-banner.ui-vis,
+    .game-input-area.ui-vis {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* ── Quiz panel ── */
+    .quiz-panel {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      background: #050008;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 32px;
+      gap: 28px;
+    }
+    .quiz-panel.active { display: flex; }
+    .quiz-title {
+      font-family: 'New Rocker', serif;
+      font-size: 42px;
+      color: #fff;
+      letter-spacing: 0.05em;
+      text-align: center;
+    }
+    .quiz-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      width: 100%;
+      max-width: 820px;
+    }
+    .quiz-progress {
+      font-family: 'VT323', monospace;
+      font-size: 26px;
+      color: #888;
+      letter-spacing: 0.15em;
+    }
+    .quiz-timer {
+      font-family: 'VT323', monospace;
+      font-size: 26px;
+      color: #fff;
+      transition: color 0.2s;
+    }
+    .quiz-timer.urgent { color: #ff2222; }
+    .quiz-score-tally {
+      font-family: 'VT323', monospace;
+      font-size: 26px;
+      color: #ffe87c;
+    }
+    .quiz-question-box {
+      background: #0a0a0a;
+      border: 2px solid #fff;
+      padding: 28px 36px;
+      width: 100%;
+      max-width: 820px;
+    }
+    .quiz-question-text {
+      font-family: 'New Rocker', serif;
+      font-size: 32px;
+      color: #e0e0e0;
+      line-height: 1.35;
+      text-align: center;
+    }
+    .quiz-choices {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      width: 100%;
+      max-width: 820px;
+    }
+    .quiz-btn {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: #0f0f0f;
+      border: 2px solid #333;
+      padding: 16px 22px;
+      cursor: pointer;
+      text-align: left;
+      width: 100%;
+      transition: border-color 0.12s, background 0.12s;
+    }
+    .quiz-btn:hover:not(:disabled) { border-color: #fff; background: #1a1a1a; }
+    .quiz-btn:disabled { cursor: default; }
+    .quiz-btn.correct { border-color: #ffe87c; background: #1c1800; }
+    .quiz-btn.wrong   { border-color: #cc2222; background: #1a0000; }
+    .quiz-letter {
+      font-family: 'VT323', monospace;
+      font-size: 30px;
+      color: #666;
+      min-width: 22px;
+      flex-shrink: 0;
+    }
+    .quiz-btn-text {
+      font-family: 'New Rocker', serif;
+      font-size: 22px;
+      color: #ccc;
+      line-height: 1.25;
+    }
+    .quiz-feedback {
+      font-family: 'VT323', monospace;
+      font-size: 28px;
+      text-align: center;
+      min-height: 32px;
+      letter-spacing: 0.08em;
+    }
+
+    /* ── Game dialog continue indicator ── */
+    #game-continue {
+      font-family: 'VT323', monospace;
+      font-size: 22px;
+      color: #fff;
+      text-align: right;
+      animation: blink 0.8s step-end infinite;
+      line-height: 1;
+      margin-top: 2px;
+    }
+    .game-dialog-box { cursor: pointer; }
+
+    /* ── Curse overlay ── */
+    .curse-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 95;
+      background: rgba(40, 0, 0, 0.82);
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .curse-overlay.active { display: flex; }
+    .curse-card {
+      text-align: center;
+      padding: 2rem 3rem;
+      animation: jitter 0.08s infinite;
+    }
+    .curse-eyebrow {
+      font-family: 'VT323', monospace;
+      font-size: 22px;
+      color: rgba(255, 80, 80, 0.6);
+      letter-spacing: 0.25em;
+      margin-bottom: 1rem;
+    }
+    .curse-name-display {
+      font-family: 'New Rocker', serif;
+      font-size: 68px;
+      color: #ff2222;
+      opacity: 0.9;
+      text-shadow: 0 0 30px rgba(255,0,0,0.6), 0 0 60px rgba(255,0,0,0.3);
+      margin-bottom: 0.75rem;
+      line-height: 1.2;
+    }
+    .curse-letter { display: inline-block; }
+    .curse-desc-display {
+      font-family: 'VT323', monospace;
+      font-size: 36px;
+      color: rgba(255, 160, 160, 0.85);
+      margin-bottom: 1.5rem;
+    }
+    .curse-prompt {
+      font-family: 'VT323', monospace;
+      font-size: 20px;
+      color: rgba(255, 100, 100, 0.5);
+      animation: blink 1s step-end infinite;
+    }
+
+    /* ── Forbidden-letter mirror overlay ── */
+    .input-mirror-wrap {
+      position: relative;
+      flex: 1;
+    }
+    .game-input-area .input-mirror-wrap textarea {
+      flex: none;
+      width: 100%;
+    }
+    .input-mirror {
+      position: absolute;
+      inset: 0;
+      padding: 8px 12px;
+      font-family: 'Syne Mono', monospace;
+      font-size: 15px;
+      line-height: 1.5;
+      pointer-events: none;
+      overflow: hidden;
+      white-space: pre-wrap;
+      word-break: break-all;
+      color: #e0e0e0;
+    }
+    .bad-char {
+      display: inline-block;
+      color: #ff3333;
+      animation: jitter 0.07s steps(1) infinite;
+    }
+    .bad-word {
+      display: inline-block;
+      color: #ff3333;
+      animation: jitter 0.09s steps(1) infinite;
+    }
+    .game-input-area textarea.has-bad-char {
+      color: transparent;
+      caret-color: #e0e0e0;
+    }
+
+    /* ── Curse badge in game scene ── */
+    .curse-badge-wrap {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      z-index: 2;
+    }
+    .curse-badge {
+      font-family: 'VT323', monospace;
+      font-size: 20px;
+      color: rgba(255, 60, 60, 0.35);
+      animation: jitter 0.12s infinite;
+      white-space: nowrap;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+<button id="mute-btn" onclick="toggleMute()">♪</button>
+<div class="flash-overlay" id="flash-overlay"></div>
+<div id="timer-flash" style="position:fixed;inset:0;z-index:155;pointer-events:none;display:flex;align-items:center;justify-content:center;">
+  <div id="timer-flash-wrap" style="opacity:0;">
+    <div id="timer-flash-num" style="font-family:'New Rocker',serif;font-size:clamp(110px,24vw,190px);color:#fff;line-height:1;user-select:none;"></div>
+  </div>
+</div>
+<div class="choice-overlay" id="choice-overlay">
+  <div class="choice-box">
+    <div class="choice-label"> What do you say?</div>
+    <div id="choice-list"></div>
+  </div>
+</div>
+
+<!-- Intro screen -->
+<div class="intro-overlay" id="intro-overlay">
+  <div class="intro-title-area">
+    <div class="intro-gavel">⚖</div>
+    <h1 class="intro-main-title">DEBATE CLUB<br>FROM HELL</h1>
+    <div class="intro-main-sub">or, wherever you are?</div>
+  </div>
+  <div class="intro-dialog-box" id="intro-dialog-box">
+    <div class="dialog-speaker" id="dialog-speaker"></div>
+    <div class="intro-dialog-text" id="intro-dialog-text"></div>
+    <input type="text" id="intro-name-input" class="intro-name-input" placeholder="enter your name..." maxlength="20">
+    <div class="intro-menu" id="intro-menu">
+      <div class="intro-menu-item selected" data-index="0">▶ Begin</div>
+      <div class="intro-menu-item" data-index="1">&nbsp;&nbsp;Flee</div>
+    </div>
+    <div class="intro-continue" id="intro-continue" style="visibility:hidden">▼</div>
+  </div>
+</div>
+
+<!-- Scene title card -->
+<div class="scene-card" id="scene-card">
+  <div class="scene-number" id="scene-number">SCENE I</div>
+  <div class="scene-subtitle-text" id="scene-subtitle">I'm... where?</div>
+</div>
+
+<div class="curse-overlay" id="curse-overlay">
+  <div class="curse-card">
+    <div class="curse-phase" id="curse-phase1">
+      <div class="curse-eyebrow">✦ curse applied ✦</div>
+      <div class="curse-name-display" id="curse-name-display"></div>
+      <div class="curse-prompt">[ enter / space ]</div>
+    </div>
+    <div class="curse-phase" id="curse-phase2" style="display:none">
+      <div class="curse-eyebrow">your curse this round</div>
+      <div class="curse-desc-display" id="curse-desc-display"></div>
+      <div class="curse-prompt">[ enter / space ]</div>
+    </div>
+  </div>
+</div>
+<div id="rsg-overlay" style="display:none; position:fixed; inset:0; z-index:93; background:rgba(0,0,0,0.88); align-items:center; justify-content:center;">
+  <div id="rsg-text" style="font-family:'New Rocker',serif; font-size:clamp(60px,14vw,110px); color:#fff; letter-spacing:0.08em;"></div>
+</div>
+
+<div id="coin-result-overlay" style="display:none; position:fixed; inset:0; z-index:250; background:rgba(0,0,0,0.88); flex-direction:column; align-items:center; justify-content:center; gap:10px;">
+  <div id="coin-result-eyebrow" style="font-family:'VT323',monospace; font-size:20px; color:rgba(255,255,255,0.4); letter-spacing:0.3em; text-transform:uppercase;">you argue</div>
+  <div id="coin-result-word" style="font-family:'New Rocker',serif; font-size:clamp(72px,16vw,130px); color:#fff; letter-spacing:0.06em;"></div>
+</div>
+
+<div id="claw-overlay" style="display:none; position:fixed; inset:0; z-index:300; background:rgba(140,0,0,0.8); align-items:center; justify-content:center;">
+  <img src="misc/claw.png" style="max-height:85vh; max-width:85vw; image-rendering:pixelated; filter:drop-shadow(0 0 40px #ff0000);">
+</div>
+
+<div class="court-wrap">
+
+  <!-- HUD -->
+  <div class="game-hud">
+    <span class="hud-round" id="round-label">Round 1 of 3</span>
+    <div class="hud-timer">⏱ <span class="timer-display" id="timer-display">—</span></div>
+    <span class="hud-score">Score: <span id="total-score">0</span></span>
+  </div>
+  <!-- Scene: background visible, sprite, proposition banner -->
+  <div class="game-scene">
+    <div class="proposition-banner">
+      <div class="prop-label" id="prop-label">You must defend</div>
+      <p class="prop-text" id="proposition"></p>
+      <div class="curse-reminder" id="curse-reminder"></div>
+    </div>
+    <img class="judge-sprite" id="judge-sprite" src="sprites/neutral.png" alt="" style="opacity:0">
+    <div class="curse-badge-wrap" id="curse-badge-wrap">
+      <span class="curse-badge" id="curse-badge"></span>
+    </div>
+    <!-- Hidden transcript kept for DOM compat -->
+    <div id="transcript-box" style="display:none"><div id="transcript"></div></div>
+  </div>
+
+  <!-- Judge dialog (RPG style) -->
+  <div class="game-dialog-area">
+    <div class="game-dialog-box" id="game-dialog-box">
+      <div class="game-dialog-speaker" id="game-dialog-speaker" style="display:none"></div>
+      <div class="game-dialog-text" id="game-dialog-text"></div>
+      <div id="game-continue" style="visibility:hidden">▼</div>
+    </div>
+  </div>
+
+  <!-- Player input (RPG style) -->
+  <div class="game-input-area">
+    <div class="game-input-box">
+      <div class="game-input-speaker" id="player-badge"></div>
+      <div class="game-input-row">
+        <div class="input-mirror-wrap">
+          <div class="input-mirror" id="input-mirror"></div>
+          <textarea
+            id="arg-input"
+            placeholder="What do you say?"
+            maxlength="50"
+          ></textarea>
+        </div>
+        <button class="submit-btn" id="submit-btn">Argue! ↗</button>
+      </div>
+      <div class="game-input-footer">
+        <p class="error-msg" id="error-msg"></p>
+        <div class="char-count" id="char-count-wrap"><span id="char-count">0</span> / <span id="char-limit-display">50</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="quiz-panel" id="quiz-panel">
+    <div class="quiz-title">Mafu's Quiz Show</div>
+    <div class="quiz-header">
+      <span class="quiz-progress" id="quiz-progress">Q 1 / 5</span>
+      <span class="quiz-timer" id="quiz-timer">10</span>
+      <span class="quiz-score-tally" id="quiz-score-tally">0 pts</span>
+    </div>
+    <div class="quiz-question-box">
+      <div class="quiz-question-text" id="quiz-question-text"></div>
+    </div>
+    <div class="quiz-choices">
+      <button class="quiz-btn" data-idx="0"><span class="quiz-letter">A</span><span class="quiz-btn-text"></span></button>
+      <button class="quiz-btn" data-idx="1"><span class="quiz-letter">B</span><span class="quiz-btn-text"></span></button>
+      <button class="quiz-btn" data-idx="2"><span class="quiz-letter">C</span><span class="quiz-btn-text"></span></button>
+      <button class="quiz-btn" data-idx="3"><span class="quiz-letter">D</span><span class="quiz-btn-text"></span></button>
+    </div>
+    <div class="quiz-feedback" id="quiz-feedback"></div>
+  </div>
+
+</div>
+
+<script>
+
+  // ─────────────────────────────────────────
+  // PROPOSITIONS — add more here!
+  // ─────────────────────────────────────────
+  const PROPOSITIONS = [
+    "The moon is just Earth's hat.",
+    "Sneezing should be taxed.",
+    "Pants are morally optional.",
+    "The alphabet has too many letters.",
+    "Elevators are just slow teleportation.",
+    "Sleep is a scam invented by mattress companies.",
+    "The concept of 'north' is overrated.",
+    "Soup is just hot water that got carried away.",
+
+    // Mafu's additions
+    "Death is just the universe saying 'wrap it up'.",
+    "Ghosts have no one to blame but themselves.",
+    "Hell is actually fine, once you adjust.",
+    "Paperwork is worse than fire.",
+    "The living are just the dead with a delay.",
+    "Boredom is the only truly infinite punishment.",
+    "Fire is an overrated punishment.",
+    "Eternity is long enough to ruin anything.",
+    "Every rule exists because someone ruined it for everyone.",
+
+    "Crying has never once solved anything.",
+    "All punishments should come with a rating system.",
+    "Suffering is mostly a matter of perspective.",
+    "Being forgotten is worse than being remembered badly.",
+  ];
+
+  // ─────────────────────────────────────────
+  // STATE
+  // ─────────────────────────────────────────
+  const ROUND_SECONDS = 43;
+  const BASE_CHAR_LIMIT = 50;
+
+  let playerName   = "Counselor";
+  let playerChoice = "";
+  let activeCurse  = null;
+
+  function countSyllables(word) {
+    word = word.toLowerCase().replace(/[^a-z]/g, '');
+    if (!word) return 0;
+    if (word.length <= 3) return 1;
+    word = word.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, '');
+    word = word.replace(/^y/, '');
+    const m = word.match(/[aeiouy]{1,2}/g);
+    return m ? m.length : 1;
+  }
+
+  const TASKS = [
+    { prompt: "Write a haiku about hell.", haiku: true },
+    { prompt: "Write a haiku about your greatest regret.", haiku: true },
+    { prompt: "Write a one-sentence advertisement for hell." },
+    { prompt: "Write a love poem to me." },
+    { prompt: "Comfort someone who just learned the alphabet has only 26 letters." },
+    { prompt: "Write a one-line horoscope for today." },
+  ];
+
+  const QUIZ_QUESTIONS = [
+    { q: "In Dante's Inferno, how many circles of Hell are there?",
+      choices: ["7", "8", "9", "12"], answer: 2 },
+    { q: "What river must souls cross to enter the Greek underworld?",
+      choices: ["Lethe", "Styx", "Acheron", "Phlegethon"], answer: 1 },
+    { q: "Brimstone — mentioned throughout the Bible alongside hellfire — is an old name for which element?",
+      choices: ["Carbon", "Phosphorus", "Sulfur", "Arsenic"], answer: 2 },
+    { q: "In Norse mythology, what is the realm of fire called?",
+      choices: ["Asgard", "Niflheim", "Muspelheim", "Helheim"], answer: 2 },
+    { q: "The River Phlegethon in Greek mythology was a river of what?",
+      choices: ["Blood", "Fire", "Tears", "Poison"], answer: 1 },
+    { q: "Who guided Dante through Hell in the Divine Comedy?",
+      choices: ["Homer", "Ovid", "Socrates", "Virgil"], answer: 3 },
+    { q: "In Milton's Paradise Lost, what is Satan's grand palace in Hell called?",
+      choices: ["Tartarus", "Pandemonium", "Gehenna", "Abaddon"], answer: 1 },
+    { q: "In Greek myth, Prometheus was punished for stealing what from the gods?",
+      choices: ["Nectar", "Thunder", "Fire", "Immortality"], answer: 2 },
+    { q: "Which mythological creature is reborn from its own ashes?",
+      choices: ["Basilisk", "Chimera", "Griffin", "Phoenix"], answer: 3 },
+    { q: "Who guards the entrance to the Greek underworld?",
+      choices: ["Charon", "Thanatos", "Cerberus", "Hecate"], answer: 2 },
+    { q: "What is the hottest planet in our solar system?",
+      choices: ["Mercury", "Venus", "Mars", "Jupiter"], answer: 1 },
+    { q: "In Hindu mythology, who is the god of death and the underworld?",
+      choices: ["Shiva", "Vishnu", "Kali", "Yama"], answer: 3 },
+    { q: "Ray Bradbury's novel about book-burning is named after what temperature?",
+      choices: ["212°F", "451°F", "666°F", "1000°F"], answer: 1 },
+    { q: "In Japanese mythology, who is the lord of the underworld and judge of the dead?",
+      choices: ["Oni", "Izanami", "Emma-O", "Raijin"], answer: 2 },
+    { q: "The Aztec underworld, ruled by Mictlantecuhtli, was called what?",
+      choices: ["Xibalba", "Mictlan", "Tlalocan", "Tamoanchan"], answer: 1 },
+    { q: "Which element makes up roughly 75% of the sun's mass?",
+      choices: ["Helium", "Oxygen", "Hydrogen", "Carbon"], answer: 2 },
+    { q: "What is the typical temperature range of lava in degrees Celsius?",
+      choices: ["200–400°C", "700–1200°C", "2000–3000°C", "50–100°C"], answer: 1 },
+    { q: "In the Bible, which angel was cast out of Heaven and became Satan?",
+      choices: ["Michael", "Gabriel", "Lucifer", "Raphael"], answer: 2 },
+    { q: "Which Greek god is associated with fire, volcanoes, and the forge?",
+      choices: ["Ares", "Apollo", "Hephaestus", "Hermes"], answer: 2 },
+    { q: "What is the name of the ferryman who transports souls across the River Styx?",
+      choices: ["Orpheus", "Charon", "Thanatos", "Morpheus"], answer: 1 },
+
+    // ── Second bank of questions ──────────────────────────────────────
+    { q: "In Dante's Inferno, what sin is punished in the ninth and lowest circle of Hell?",
+      choices: ["Violence", "Fraud", "Lust", "Treachery"], answer: 3 },
+    { q: "In Greek mythology, where do the virtuous souls rest after death?",
+      choices: ["Tartarus", "Elysium", "Asphodel", "Erebus"], answer: 1 },
+    { q: "In Norse mythology, who rules the realm of the dead in Helheim?",
+      choices: ["Frigg", "Hel", "Skadi", "Sigyn"], answer: 1 },
+    { q: "Which Greek hero brought Cerberus up from the underworld as one of his Twelve Labors?",
+      choices: ["Perseus", "Theseus", "Heracles", "Achilles"], answer: 2 },
+    { q: "In Egyptian mythology, the heart of the dead is weighed against a feather belonging to which goddess?",
+      choices: ["Isis", "Hathor", "Ma'at", "Nephthys"], answer: 2 },
+    { q: "Which Greek figure is condemned to roll a boulder uphill for eternity?",
+      choices: ["Tantalus", "Sisyphus", "Ixion", "Prometheus"], answer: 1 },
+    { q: "Which Greek figure stands in a pool of water forever unable to eat or drink — giving us the word 'tantalize'?",
+      choices: ["Sisyphus", "Ixion", "Tantalus", "Narcissus"], answer: 2 },
+    { q: "What is the name of the queen of the underworld in Mesopotamian mythology?",
+      choices: ["Ishtar", "Inanna", "Ereshkigal", "Ninhursag"], answer: 2 },
+    { q: "In Chinese mythology, what is the name of the realm of the dead?",
+      choices: ["Bardo", "Naraka", "Diyu", "Xibalba"], answer: 2 },
+    { q: "Which element has the highest melting point of all known elements?",
+      choices: ["Iron", "Tungsten", "Osmium", "Carbon"], answer: 1 },
+    { q: "In Buddhist tradition, what is the realm of suffering and punishment called?",
+      choices: ["Bardo", "Naraka", "Nirvana", "Samsara"], answer: 1 },
+    { q: "What is the name of Hades' wife in Greek mythology?",
+      choices: ["Demeter", "Hecate", "Persephone", "Artemis"], answer: 2 },
+    { q: "In Dante's Divine Comedy, who guides Dante through Paradise?",
+      choices: ["Virgil", "Beatrice", "Homer", "Cicero"], answer: 1 },
+    { q: "In Greek mythology, which goddess is linked to the crossroads, magic, and the underworld?",
+      choices: ["Circe", "Medea", "Hecate", "Persephone"], answer: 2 },
+    { q: "What instrument does Orpheus play to charm his way through the underworld?",
+      choices: ["Flute", "Lyre", "Harp", "Lute"], answer: 1 },
+    { q: "In Roman mythology, what is the name of the god who rules the underworld?",
+      choices: ["Mars", "Saturn", "Pluto", "Neptune"], answer: 2 },
+    { q: "The word 'volcano' derives from the name of which Roman god?",
+      choices: ["Vulcan", "Mars", "Pluto", "Janus"], answer: 0 },
+    { q: "In the Sumerian myth 'Descent of Inanna', which goddess journeys into the underworld?",
+      choices: ["Ninhursag", "Ninsun", "Inanna", "Ereshkigal"], answer: 2 },
+    { q: "Which philosopher wrote 'Hell is other people' in the play No Exit?",
+      choices: ["Albert Camus", "Jean-Paul Sartre", "Simone de Beauvoir", "Friedrich Nietzsche"], answer: 1 },
+    { q: "In the Mayan Popol Vuh, what is the name of the lords of the underworld's realm?",
+      choices: ["Mictlan", "Diyu", "Xibalba", "Helheim"], answer: 2 },
+  ];
+
+  let quizQuestions = [];
+  let quizIndex = 0;
+  let quizCorrect = 0;
+  let quizTimerInterval = null;
+
+  const CURSES = [
+    {
+      name: "PRIDE (I)",
+      desc: "The letter 'E' is forbidden.",
+      forbiddenChar: /[eE]/,
+      validate: t => /[eE]/.test(t) ? "The letter 'E' is forbidden this round!" : null,
+    },
+    {
+      name: "PRIDE (II)",
+      desc: "The letter 'I' is forbidden.",
+      forbiddenChar: /[iI]/,
+      validate: t => /[iI]/.test(t) ? "The letter 'I' is forbidden this round!" : null,
+    },
+    {
+      name: "SLOTH",
+      desc: "No word may exceed 5 letters.",
+      forbiddenWordLen: 5,
+      blockMsg: "Shorten that word first!",
+      validate: t => {
+        const bad = t.trim().split(/\s+/).find(w => w.replace(/[^a-zA-Z]/g, "").length > 5);
+        return bad ? `"${bad}" exceeds 5 letters!` : null;
+      },
+    },
+    {
+      name: "ENVY",
+      desc: "Maximum 35 characters.",
+      charLimit: 35,
+      validate: t => t.length > 35 ? "Too long — 35 characters maximum!" : null,
+    },
+    {
+      name: "GREED (I)",
+      desc: "Every word must be at least 4 letters.",
+      blockMsg: "That word is too short — 4+ letters required!",
+      badWord: w => { const c = w.replace(/[^a-zA-Z]/g, ""); return c.length > 0 && c.length < 4; },
+      validate: t => {
+        const bad = t.trim().split(/\s+/).find(w => { const c = w.replace(/[^a-zA-Z]/g, ""); return c.length > 0 && c.length < 4; });
+        return bad ? `"${bad}" is too short — 4+ letters required!` : null;
+      },
+    },
+    {
+      name: "GREED (II)",
+      desc: "Every word must have 2+ syllables.",
+      blockMsg: "That word needs 2+ syllables!",
+      blockOnComplete: true,
+      badWord: w => { const c = w.replace(/[^a-zA-Z]/g, ""); return c.length > 0 && countSyllables(c) < 2; },
+      validate: t => {
+        const bad = t.trim().split(/\s+/).find(w => { const c = w.replace(/[^a-zA-Z]/g, ""); return c.length > 0 && countSyllables(c) < 2; });
+        return bad ? `"${bad}" needs 2+ syllables!` : null;
+      },
+    },
+    {
+      name: "LUST (I)",
+      desc: "Every word must have an odd number of letters.",
+      blockMsg: "That word has an even number of letters!",
+      blockOnComplete: true,
+      badWord: w => { const c = w.replace(/[^a-zA-Z]/g, ""); return c.length > 0 && c.length % 2 === 0; },
+      validate: t => {
+        const bad = t.trim().split(/\s+/).find(w => { const c = w.replace(/[^a-zA-Z]/g, ""); return c.length > 0 && c.length % 2 === 0; });
+        return bad ? `"${bad}" has an even number of letters!` : null;
+      },
+    },
+    {
+      name: "LUST (II)",
+      desc: "Every word must have an even number of letters.",
+      blockMsg: "That word has an odd number of letters!",
+      blockOnComplete: true,
+      badWord: w => { const c = w.replace(/[^a-zA-Z]/g, ""); return c.length > 0 && c.length % 2 !== 0; },
+      validate: t => {
+        const bad = t.trim().split(/\s+/).find(w => { const c = w.replace(/[^a-zA-Z]/g, ""); return c.length > 0 && c.length % 2 !== 0; });
+        return bad ? `"${bad}" has an odd number of letters!` : null;
+      },
+    },
+    {
+      name: "MAFU'S SPECIAL (I)",
+      desc: "The letters 'M' and 'A' are forbidden.",
+      forbiddenChar: /[mMaA]/,
+      validate: t => /[mMaA]/.test(t) ? "The letters 'M' and 'A' are forbidden this round!" : null,
+    },
+    {
+      name: "MAFU'S SPECIAL (II)",
+      desc: "The letters 'F' and 'U' are forbidden.",
+      forbiddenChar: /[fFuU]/,
+      validate: t => /[fFuU]/.test(t) ? "The letters 'F' and 'U' are forbidden this round!" : null,
+    },
+  ];
+
+  let state = {
+    proposition: "",
+    round: 1,
+    totalScore: 0,
+    history: [],
+    loading: false,
+    gameOver: false,
+  };
+
+  let timerInterval = null;
+  let timerSeconds  = 0;
+  let inputBlocked  = false;
+
+  function startTimer(seconds) {
+    clearInterval(timerInterval);
+    clearRemarkTimers();
+    timerSeconds = seconds !== undefined ? seconds : ROUND_SECONDS;
+    const display = document.getElementById("timer-display");
+    display.textContent = timerSeconds;
+    display.classList.remove("urgent");
+    playBgm("bgm/fastpaced.mp3");
+
+    // Pick 2–3 random seconds (all >10) to drop a Mafu remark
+    const pool = [];
+    for (let s = 15; s <= timerSeconds - 3; s++) pool.push(s);
+    const shuffled = pool.sort(() => Math.random() - 0.5);
+    const triggerCount = 2 + Math.floor(Math.random() * 2); // 2 or 3
+    const remarkTriggers = new Set(shuffled.slice(0, triggerCount));
+    const usedRemarks = new Set();
+
+    timerInterval = setInterval(() => {
+      timerSeconds--;
+      display.textContent = timerSeconds;
+      if (timerSeconds <= 10) {
+        display.classList.add("urgent");
+        flashTimerNumber(timerSeconds);
+      }
+      if (remarkTriggers.has(timerSeconds)) {
+        let idx;
+        do { idx = Math.floor(Math.random() * MAFU_REMARKS.length); }
+        while (usedRemarks.has(idx) && usedRemarks.size < MAFU_REMARKS.length);
+        usedRemarks.add(idx);
+        showMafuRemark(MAFU_REMARKS[idx]);
+      }
+      if (timerSeconds <= 0) {
+        clearInterval(timerInterval);
+        clearRemarkTimers();
+        display.textContent = "0";
+        const draftVal = document.getElementById("arg-input").value.trim();
+        if (draftVal && !state.loading && !state.gameOver) {
+          submitArgument();
+        } else {
+          timeoutGameOver();
+        }
+      }
+    }, 1000);
+  }
+
+  function flashTimerNumber(n) {
+    const wrap = document.getElementById("timer-flash-wrap");
+    const num  = document.getElementById("timer-flash-num");
+    if (!wrap || !num) return;
+    num.textContent = n;
+    wrap.style.animation = "none";
+    num.style.animation  = "none";
+    wrap.offsetHeight; // force reflow
+    wrap.style.animation = "timerFlash 0.88s ease forwards";
+    if (n <= 5) {
+      num.style.color      = "#ff2222";
+      num.style.textShadow = "0 0 40px rgba(255,0,0,0.8)";
+      num.style.animation  = "jitter 0.07s steps(1) infinite";
+    } else {
+      num.style.color      = "#ffffff";
+      num.style.textShadow = "none";
+      num.style.animation  = "none";
+    }
+  }
+
+  function stopTimer() {
+    clearInterval(timerInterval);
+    clearRemarkTimers();
+    const display = document.getElementById("timer-display");
+    display.textContent = "—";
+    display.classList.remove("urgent");
+    if (bgmEl) { bgmEl.pause(); bgmEl = null; }
+  }
+
+  function applyCharLimit(limit) {
+    const ta  = document.getElementById("arg-input");
+    const lbl = document.getElementById("char-limit-display");
+    ta.maxLength = limit;
+    if (lbl) lbl.textContent = limit >= 999 ? "∞" : limit;
+    if (ta.value.length > limit) ta.value = ta.value.slice(0, limit);
+    document.getElementById("char-count-wrap").classList.toggle("over", limit < 999 && ta.value.length >= limit - 5);
+  }
+
+  function renderJitteredText(containerId, text) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    el.innerHTML = "";
+    [...text].forEach(ch => {
+      const span = document.createElement("span");
+      span.className = "curse-letter";
+      span.textContent = ch === " " ? " " : ch;
+      const dur   = (0.06 + Math.random() * 0.08).toFixed(3);
+      const delay = (Math.random() * 0.1).toFixed(3);
+      span.style.animation = `jitter ${dur}s steps(1) infinite ${delay}s`;
+      el.appendChild(span);
+    });
+  }
+
+  function showCurseAnnouncement(curse, onDone) {
+    const overlay = document.getElementById("curse-overlay");
+    const phase1  = document.getElementById("curse-phase1");
+    const phase2  = document.getElementById("curse-phase2");
+
+    renderJitteredText("curse-name-display", curse.name);
+    renderJitteredText("curse-desc-display", curse.desc);
+
+    phase1.style.display = "";
+    phase2.style.display = "none";
+    overlay.classList.add("active");
+
+    let phase = 1;
+
+    const advance = (e) => {
+      if (e.type === "keydown" && e.key !== "Enter" && e.key !== " ") return;
+      if (e.type === "keydown") e.preventDefault();
+
+      if (phase === 1) {
+        phase = 2;
+        phase1.style.display = "none";
+        phase2.style.display = "";
+        return;
+      }
+
+      document.removeEventListener("keydown", advance);
+      overlay.removeEventListener("click", advance);
+      overlay.classList.remove("active");
+      onDone();
+    };
+
+    document.addEventListener("keydown", advance);
+    overlay.addEventListener("click", advance);
+  }
+
+  function showReadySetGo(onDone) {
+    const overlay = document.getElementById("rsg-overlay");
+    const textEl  = document.getElementById("rsg-text");
+    const steps   = ["ready...", "set...", "go!"];
+    let i = 0;
+    overlay.style.display = "flex";
+    function tick() {
+      textEl.textContent = steps[i];
+      textEl.style.animation = "none";
+      textEl.offsetHeight;
+      textEl.style.animation = "coinWordIn 0.18s ease forwards";
+      if (i < steps.length - 1) {
+        i++;
+        setTimeout(tick, 650);
+      } else {
+        setTimeout(() => {
+          overlay.style.display = "none";
+          onDone();
+        }, 500);
+      }
+    }
+    tick();
+  }
+
+  function showCoinResult(onDone) {
+    const overlay = document.getElementById("coin-result-overlay");
+    const wordEl  = document.getElementById("coin-result-word");
+    wordEl.textContent = state.side;
+    wordEl.style.animation = "none";
+    overlay.style.opacity   = "1";
+    overlay.style.transition = "";
+    overlay.style.display   = "flex";
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      wordEl.style.animation = "coinWordIn 0.3s cubic-bezier(0.17,0.67,0.28,1.45) forwards";
+    }));
+    setTimeout(() => {
+      overlay.style.transition = "opacity 0.55s ease";
+      overlay.style.opacity    = "0";
+      setTimeout(() => {
+        overlay.style.display    = "none";
+        overlay.style.transition = "";
+        if (onDone) onDone();
+      }, 560);
+    }, 1500);
+  }
+
+  function showClawAttack(onDone) {
+    const overlay = document.getElementById("claw-overlay");
+    overlay.style.opacity   = "1";
+    overlay.style.transition = "";
+    overlay.style.display   = "flex";
+    playSfx("sfx/claw.mp3");
+
+    // Red flash
+    const flashEl = document.getElementById("flash-overlay");
+    flashEl.style.background = "rgba(200, 0, 0, 0.92)";
+    flashEl.style.transition  = "none";
+    flashEl.style.opacity     = "1";
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      flashEl.style.transition = "opacity 0.5s ease";
+      flashEl.style.opacity    = "0";
+    }));
+
+    // Screen shake shortly after impact
+    setTimeout(() => {
+      const wrap = document.querySelector(".court-wrap");
+      if (wrap) {
+        wrap.style.animation = "screenShake 0.45s ease";
+        wrap.addEventListener("animationend", () => { wrap.style.animation = ""; }, { once: true });
+      }
+    }, 80);
+
+    // Fade out overlay, then call onDone
+    setTimeout(() => {
+      overlay.style.transition = "opacity 0.55s ease";
+      overlay.style.opacity    = "0";
+      setTimeout(() => {
+        overlay.style.display    = "none";
+        overlay.style.transition = "";
+        flashEl.style.background = "#fff";
+        if (onDone) onDone();
+      }, 560);
+    }, 550);
+  }
+
+  function beginRound(onReady) {
+    activeCurse = CURSES[Math.floor(Math.random() * CURSES.length)];
+    const isHaiku = state.activeTask?.haiku;
+    const limit = isHaiku ? 999 : (activeCurse.charLimit || BASE_CHAR_LIMIT);
+    applyCharLimit(limit);
+    const reminder = document.getElementById("curse-reminder");
+    if (reminder) reminder.textContent = "✦ curse: " + activeCurse.desc;
+    if (state.activeTask) {
+      const propLabel = document.getElementById("prop-label");
+      if (propLabel) propLabel.textContent = "YOUR TASK:";
+      const propText = document.getElementById("proposition");
+      if (propText) propText.textContent = state.activeTask.prompt;
+    }
+    showCurseAnnouncement(activeCurse, () => showReadySetGo(() => {
+      revealGameUI();
+      if (isHaiku) {
+        setGameSpeaker("Mafu");
+        document.getElementById("game-dialog-text").textContent =
+          "Oh, haikus are hard... you can have double time for this.";
+        setTimeout(() => {
+          document.getElementById("game-dialog-text").textContent = "";
+          setGameSpeaker(null);
+          onReady(86);
+        }, 3200);
+      } else {
+        onReady();
+      }
+    }));
+  }
+
+  function timeoutGameOver() {
+    if (state.loading || state.gameOver) return;
+    state.gameOver = true;
+    stopTimer();
+    document.getElementById("submit-btn").disabled = true;
+    document.getElementById("arg-input").disabled  = true;
+    const lines = [
+      { text: "...",                                                   speaker: "Mafu", sprite: "neutral" },
+      { text: "Time's up.",                                            speaker: "Mafu" },
+      { text: "And I really wanted to try this new thing out too!",   speaker: "Mafu", sprite: "sad" },
+      { text: "Maybe I should get back into torturing people...", speaker: "Mafu" },
+    ];
+    playSceneDialogue(lines, () => {
+      showVerdict(state.totalScore, "The defendant ran out of time and words. The court has seen enough.");
+    });
+  }
+
+  // ─────────────────────────────────────────
+  // INIT
+  // ─────────────────────────────────────────
+  // ─────────────────────────────────────────
+  // SCENE DIALOGUE — same typewriter system, game dialog box
+  // ─────────────────────────────────────────
+  let gameSceneTyping    = false;
+  let gameSceneInterval  = null;
+  let gameSceneLines     = [];
+  let gameSceneIndex     = 0;
+  let gameSceneActive    = false;
+  let pendingAdvance     = null;
+  let gameSceneCallback  = null;
+
+  // ─── MAFU'S MID-ROUND REMARKS ────────────────────────────────────
+  // Shown at random timer ticks (>10 s left). Add or edit freely.
+  const MAFU_REMARKS = [
+    "I wouldn't think that deep into it.",
+    "Put your soul into it — wait, do hell-bounds still have those?",
+    "You're doing... something.",
+    "No pressure. well, actually...",
+    "Arguing is basically screaming, but politely, I guess.",
+    "Take your time. you have some of it left.",
+    "This is the most fun I've had in a while, not gonna lie.",
+    "Should I tell you a joke? No? Okay.",
+
+    
+    "Should I torture you more or less if you do well? I haven't decided yet.",
+    "If you do really well, maybe I'll let you out early. Just kidding, don't get any ideas.",
+  ];
+
+  let remarkTimeouts = [];
+  let remarkTypingInterval = null;
+
+  function showMafuRemark(text) {
+    const textEl = document.getElementById("game-dialog-text");
+    const box    = document.getElementById("game-dialog-box");
+    if (!textEl || box?.classList.contains("dialogue-mode") || state.loading || state.gameOver) return;
+
+    clearInterval(remarkTypingInterval);
+    setGameSpeaker("Mafu");
+    textEl.textContent = "";
+    let i = 0;
+    remarkTypingInterval = setInterval(() => {
+      textEl.textContent = text.slice(0, i + 1);
+      i++;
+      if (i >= text.length) {
+        clearInterval(remarkTypingInterval);
+        const t = setTimeout(() => {
+          if (!state.loading && !state.gameOver && textEl.textContent === text) {
+            textEl.textContent = "";
+            setGameSpeaker(null);
+          }
+        }, 4000);
+        remarkTimeouts.push(t);
+      }
+    }, 35);
+  }
+
+  function clearRemarkTimers() {
+    clearInterval(remarkTypingInterval);
+    remarkTimeouts.forEach(clearTimeout);
+    remarkTimeouts = [];
+  }
+
+  // ════════════════════════════════════════════════════════════════════
+  // ─── STORY DIALOGUE ──────────────────────────────────────────────
+  //  Edit all in-game narrative here.
+  //
+  //  getSceneLines(1)   — Scene I:   intro + Round I debate setup
+  //  getSceneLines(2)   — Scene II:  between Round I and II (task intro)
+  //  getSceneLines(3)   — Scene III: between Round II and III (quiz intro)
+  //  getPostQuizLines(n)— Post-quiz: wrap-up dialogue before final verdict
+  //                        n = number of correct answers (0–5)
+  // ════════════════════════════════════════════════════════════════════
+
+  function getSceneLines(scene) {
+    const subtitles = [null, "THE PROPOSITION", "THE DELIBERATION", "THE RECKONING"];
+    document.getElementById("scene-subtitle").textContent = subtitles[scene] || "";
+
+    // ── SCENE I: THE PROPOSITION — Introduction and Round I setup ────
+    if (scene === 1) return [
+      { text: "...",                                            speaker: "???", audio: "bgm/fun-scene1.mp3", sprite: null },
+      { text: "Was this who was talking to you?",               speaker: null },
+      { text: "You look at the red-haired girl in front of you.", speaker: null, sprite: "neutral" },
+      { text: "She wears a darkish robe, and her eyes gleam with mischief.", speaker: null},
+      { text: "Do they actually let someone like this...", speaker: null},
+      { text: "She clears her throat, and the room falls silent.", speaker: null},
+      { text: "Or, what people are in this room, anyway.", speaker: null},
+      { text: "You look around, and the room looks more like a discheveled basement than any proper room.", speaker: null},
+      { text: "Now that you've regained your senses, you realize the room is empty except for you and her.", speaker: null},
+      { text: "The sound was just your head ringing, it seems.",          speaker: null},
+      { text: "Hey! Are you listening?!" ,                      speaker: "???", sprite: "happy", 
+      choices: [
+        { label: "Yes."    },
+        { label: "No."     },
+        { label: "..."     },
+      ]
+    },
+    { text: "[choice]",                                         speaker: "[name]" },
+    // ── Yes branch ────────────────────────────────────────
+    { text: "Okay, good.",                                      speaker: "???",    onlyIf: "Yes." },
+    // ── No branch ─────────────────────────────────────────
+    { text: "...",                                              speaker: "???",    onlyIf: "No." , sprite: "sad"},
+    { text: "Why do I always get the bad ones?",                speaker: "???",    onlyIf: "No." },
+    // ── Silence branch ────────────────────────────────────
+    { text: "Why do I always get the boring ones?",             speaker: "???",    onlyIf: "..." , sprite: "sad"},
+  
+      { text: "Anyways...",                                     speaker: "???", sprite: "neutral" },
+      { text: "She seems to flip through some papers on her desk, then looks up at you.", speaker: null, sfx: "sfx/flipping2.mp3"},
+      { text: "My name is Mafu, I'm the torturer here.",           speaker: "Mafu" },
+      { text: "She says in the most monotone voice you've ever heard.",  speaker: null },
+      { text: "You have the right to remain silent, or to scream, but it really won't help your case. ", speaker: "Mafu" },
+      { text: "I know you just got here and all, but do you have any questions for me before we start?", speaker: "Mafu",
+        choices: [
+          { label: "What is this place?", explore: true, lines: [
+              { text: "[choice]",                                       speaker: "[name]" },
+              { text: "This is hell.",                                                          speaker: "Mafu" },
+              { text: "I know, it doesn't look like it, but trust me.",                        speaker: "Mafu" },
+              { text: "She gives you a look like you're an idiot for not realizing it.",        speaker: null},
+              { text: "It's a place where people get sent to when they die.",                  speaker: "Mafu" },
+              { text: "Anything else?",                                                        speaker: "Mafu", sprite: "neutral" },
+            ]
+          },
+          { label: "Why are you doing this to me?", explore: true, lines: [
+              { text: "[choice]",                                       speaker: "[name]" },
+              { text: "I'm not doing anything to you.",                                        speaker: "Mafu" },
+              { text: "I just work here.",                                                     speaker: "Mafu" },
+              { text: "It's not like I have a say in it.",   speaker: "Mafu" },
+              { text: "She shrugs, like she doesn't care.",                                    speaker: null, sprite: "neutral" },
+              { text: "Honestly, I don't even know why I do this job half the time.",          speaker: "Mafu" },
+              { text: "I just show up, do my thing, and go home.",                             speaker: "Mafu" },
+              { text: "Anything else?",                                                        speaker: "Mafu", sprite: "neutral" },
+            ]
+          },
+          { label: "How long am I here for?", explore: true, lines: [
+              { text: "[choice]",                                       speaker: "[name]" },
+              { text: "Forever, probably.",                                                   speaker: "Mafu" },
+              { text: "I don't really know, to be honest.",                                           speaker: "Mafu" },
+
+              { text: "It's not really my department, but I think most people just end up staying here for eternity.", speaker: "Mafu" },
+              { text: "Anything else?",                                                        speaker: "Mafu", sprite: "neutral" },
+            ]
+          },
+          { label: "Let's just get this over with...", lines: [
+              { text: "[choice]",                                       speaker: "[name]" },
+        ]
+          },
+
+        
+        ]
+      },
+      { text: "Uhh...", speaker: "Mafu" },
+      { text: "She glances around the room awkwardly, meeting the eyes of no one.", speaker: null },
+      { text: "I mean, I guess I can tell you a bit about how things work around here first.", speaker: "Mafu" },
+      { text: "She seems to consider for a moment, then continues.", speaker: null },
+      { text: "Normally, when you first get here, you get put in a cell for a bit, and then you get tortured for a while.", speaker: "Mafu" },
+      { text: "And then maybe you get tortured for eternity, I don't know.", speaker: "Mafu"},
+      { text: "I'm the one that takes care of that. ",  speaker: "Mafu"},
+      { text: "The torturing, I mean.", speaker: "Mafu" },
+      { text: "She opens her mouth to speak, but then closes it again.", speaker: "Mafu",
+        choices: [
+          { label: "Something wrong?",  lines: [
+              { text: "[choice]",                                       speaker: "[name]" },
+        ]
+    }
+        ]
+    
+    },
+      { text: "...",                                            speaker: "Mafu", sprite: "sad"},
+      { text: "Her lips quiver slightly.",                             speaker: null },
+      { text: "It's just that...", speaker: "Mafu" },
+      { text: "It's boring, okay? I like talking to people, so I let them talk to me.", speaker: "Mafu" },
+      { text: "But at the end of the day I still have to torture them, and I'm like good at it, but it's just no fun.", speaker: "Mafu" },
+      { text: "Yeah, they scream, and they cry, and they beg, but what then? The second one comes, and then the third one...", speaker: "Mafu" },
+      { text: "It's just the same thing over and over again, and it's so boring.", speaker: "Mafu" },
+      { text: "You get it, right?", speaker: "Mafu", 
+        choices: [
+          { label: "I see..." },
+          { label: "Not really." },
+          { label: "So, I'm not getting tortured?" },
+        ]
+      },
+      { text: "[choice]",                                       speaker: "[name]" },
+    // ── I see... branch ────────────────────────────────────────
+      { text: "Ugh, see? Even you get it.",                       speaker: "Mafu",    onlyIf: "I see...", sprite: "content" },
+    // ── Not really. branch ─────────────────────────────────────────
+      { text: "...",                                              speaker: "Mafu",    onlyIf: "Not really.", sprite: "content"},
+      { text: "I mean, you wouldn't get it.",                speaker: "Mafu",    onlyIf: "Not really." },
+    // ── Not getting tortured branch ────────────────────────────────────
+      { text: "I guess not.",             speaker: "Mafu",    onlyIf: "So, I'm not getting tortured?", sprite: "content"},
+      { text: "Well, you are, but I just let you talk to me for a bit before I do it.", speaker: "Mafu", onlyIf: "So, I'm not getting tortured?" },
+
+      { text: "Anyway, sorry for the traumadump.", speaker: null },
+      { text: "I've been thinking up something new we could do to like,",    speaker: "Mafu", sprite: "neutral"},
+      { text: "Make it more interesting for me, and maybe for you too, I guess.",        speaker: "Mafu" },
+      { text: "Do you think we should try something?", speaker: "Mafu",
+        choices: [
+          { label: "Yes." },
+          { label: "Yes!" },
+        ]
+      },
+      { text: "[choice]",                                       speaker: "[name]" },
+      { text: "Great!",                                         speaker: "Mafu" },
+      { text: "She claps her hands together, excited.", speaker: null, sprite: "content" },
+      { text: "Basically, what I'm thinking is, I'm going to give you a proposition, and you have to argue for it.", speaker: "Mafu", sprite: "neutral" },
+      { text: "Then, at the end of each round, I'll judge your argument and give you a score.", speaker: "Mafu" },
+      { text: "The better your argument, the higher your score.", speaker: "Mafu" },
+      { text: "Sounds fun, and, easy, right?" ,                                     speaker: "Mafu" },
+      { text: "Much better than just screaming and crying, I would think.", speaker: "Mafu" },
+      { text: "You also have to deal with a curse I'll give you each round.", speaker: "Mafu" },
+      { text: "The game is in beta, so I don't really know about the curse thing yet, but...", speaker: "Mafu", sprite: "content" },
+      { text: "I thought it would be fun to try it out.", speaker: "Mafu" },
+      { text: "Don't worry, they don't hurt.",          speaker: "Mafu" , sprite: "happy"},      
+      { text: "She flicks her wrist, almost lazily.",            speaker: null},
+      { text: "—!",                                             speaker: "[name]", clawAttack: true, sprite: null },
+      { text: "That hurt a lot.",                               speaker: null, sprite: null },
+      { text: "...",                                            speaker: "Mafu", sprite: "neutral" },
+      { text: "There.",                                         speaker: "Mafu" },
+      { text: "Now you have your curse.",                       speaker: "Mafu" },
+      { text: "Let me think of a topic...",                     speaker: "Mafu" },
+      { text: "Oh, okay. How about...",                     speaker: "Mafu" },
+      { text: state.proposition,                                  speaker: "Mafu" },
+      { text: "I'll also need to decide which side you're arguing.",    speaker: "Mafu" },
+      { text: "I'll flip a coin.",                              speaker: "Mafu", sfx: "sfx/coinflip.mp3" },
+      { text: "...",                                            speaker: "Mafu" },
+      { text: "You're arguing [side].",                         speaker: "Mafu", coinFlip: true },
+      { text: "Good luck.",                                     speaker: "Mafu" },
+      { text: "And time starts...",                             speaker: "Mafu" },
+      { text: "Now!",                                           speaker: "Mafu" },
+    ];
+    // ── SCENE II: THE DELIBERATION — Between Round I and II (task intro)
+    if (scene === 2) return [
+      { text: "...",                                            speaker: "Mafu", sprite: "neutral", audio: "bgm/fun-scene1.mp3" },
+      { text: "Not bad.",                                       speaker: "Mafu" },
+      { text: "Kind of.",                                       speaker: "Mafu" },
+      { text: "Look, the debate thing was fine, but honestly?", speaker: "Mafu", sprite: "happy" },
+      { text: "I have a ton of ideas, and we only have a limited time per torturee, so we have to speed it up a little.",                     speaker: "Mafu" },
+      { text: "This round, we're doing something different.", speaker: "Mafu" },
+      { text: "I'm going to give you a task instead.",          speaker: "Mafu" },
+      { text: "Something more... creative.",                    speaker: "Mafu" },
+      { text: "For me.",                                        speaker: "Mafu" },
+      { text: "Oh, and \u2014 new round, new curse.",           speaker: "Mafu", sprite: "neutral", clawAttack: true, sprite: null},
+      { text: "Ow!",                                            speaker: "[name]" },
+      { text: "Your task:",                                     speaker: "Mafu", sprite: "neutral" },
+      { text: "[task]",                                         speaker: "Mafu" },
+      { text: "Try your best, okay?",                  speaker: "Mafu" },
+    ];
+    // ── SCENE III: THE RECKONING — Between Round II and III (quiz intro)
+    if (scene === 3) return [
+      { text: "...",                                            speaker: "Mafu", sprite: "neutral", audio: "bgm/fun-scene1.mp3" },
+      { text: "That was fun!",                                       speaker: "Mafu" },
+      { text: "Next round, I think, will be kind of like a little quiz show.", speaker: "Mafu" },
+      { text: "Maybe it'll be interesting?", speaker: "Mafu", sprite: "happy" },
+      { text: "I'm not sure how I would give a curse in a quiz show...", speaker: "Mafu", sprite: "neutral" },
+      { text: "Anyway, let's just try it out.", speaker: "Mafu"},
+    ];
+    return [];
+  }
+
+  // ── POST-QUIZ DIALOGUE — Shown after the quiz, before the final verdict
+  // Edit the three variants below (good / okay / bad performance).
+  function getPostQuizLines(correct) {
+    if (correct >= 4) return [
+      // ── 4–5 correct: good performance ──────────────────────────────
+      { text: "...",                                  speaker: "Mafu", sprite: "neutral" },
+      { text: "Hm.",                                  speaker: "Mafu" },
+      { text: "You actually knew some of that.",      speaker: "Mafu", sprite: "happy" },
+      { text: "Don't let it go to your head.",        speaker: "Mafu", sprite: "neutral" },
+      { text: "...",                                  speaker: "[name]" },
+      { text: "Is that it?",                          speaker: "[name]" },
+      { text: "Yes.",                                 speaker: "Mafu" },
+      { text: "Results.",                             speaker: "Mafu" },
+    ];
+    if (correct >= 2) return [
+      // ── 2–3 correct: okay performance ──────────────────────────────
+      { text: "...",                                  speaker: "Mafu", sprite: "neutral" },
+      { text: "Fine.",                                speaker: "Mafu" },
+      { text: "Not a complete disaster.",             speaker: "Mafu" },
+      { text: "...",                                  speaker: "[name]" },
+      { text: "That's it?",                           speaker: "[name]" },
+      { text: "That's it.",                           speaker: "Mafu" },
+      { text: "Results.",                             speaker: "Mafu" },
+    ];
+    return [
+      // ── 0–1 correct: bad performance ───────────────────────────────
+      { text: "...",                                  speaker: "Mafu", sprite: "neutral" },
+      { text: "Wow.",                                 speaker: "Mafu" },
+      { text: "I mean.",                              speaker: "Mafu", sprite: "sad" },
+      { text: "Wow.",                                 speaker: "Mafu" },
+      { text: "Are you okay?",                        speaker: "[name]" },
+      { text: "I'm fine.",                            speaker: "Mafu", sprite: "neutral" },
+      { text: "Results.",                             speaker: "Mafu" },
+    ];
+  }
+  // ════════════════════════════════════════════════════════════════════
+
+  function setGameSpeaker(name) {
+    const el = document.getElementById("game-dialog-speaker");
+    if (!el) return;
+    if (name) {
+      el.textContent = name;
+      el.style.display = "block";
+    } else {
+      el.style.display = "none";
+    }
+  }
+
+  function typeGameLine(lineObj) {
+    const el     = document.getElementById("game-dialog-text");
+    const contEl = document.getElementById("game-continue");
+    const text   = resolveLine(lineObj);
+    let i = 0;
+    gameSceneTyping = true;
+    el.textContent  = "";
+    if (contEl) contEl.style.visibility = "hidden";
+    setGameSpeaker(resolveSpeaker(lineObj));
+    if ('sprite' in lineObj) setSprite(lineObj.sprite);
+    if (lineObj.sfx) playSfx(lineObj.sfx);
+
+    gameSceneInterval = setInterval(() => {
+      el.textContent = text.slice(0, i + 1);
+      i++;
+      if (i >= text.length) {
+        clearInterval(gameSceneInterval);
+        gameSceneTyping = false;
+        if (lineObj.audio) playBgm(lineObj.audio);
+        if (lineObj.coinFlip) {
+          if (contEl) contEl.style.visibility = "visible";
+          pendingAdvance = () => { pendingAdvance = null; showCoinResult(() => advanceGameScene()); };
+        } else if (lineObj.clawAttack) {
+          showClawAttack(() => advanceGameScene());
+        } else if (lineObj.choices) {
+          const fn = lineObj.choices.some(c => c.explore) ? showExploreChoices : showChoices;
+          fn(lineObj.choices, () => advanceGameScene());
+        } else {
+          if (contEl) contEl.style.visibility = "visible";
+        }
+      }
+    }, 35);
+  }
+
+  function finishGameScene() {
+    const contEl = document.getElementById("game-continue");
+    if (contEl) contEl.style.visibility = "hidden";
+    document.getElementById("game-dialog-box").removeEventListener("click", onGameSceneClick);
+    gameSceneActive = false;
+    gameSceneLines  = [];
+    if (gameSceneCallback) { const cb = gameSceneCallback; gameSceneCallback = null; cb(); }
+  }
+
+  function advanceGameScene() {
+    if (!gameSceneActive) return;
+    if (gameSceneTyping) {
+      clearInterval(gameSceneInterval);
+      gameSceneTyping = false;
+      stopSfx();
+      const lineObj = gameSceneLines[gameSceneIndex];
+      document.getElementById("game-dialog-text").textContent = resolveLine(lineObj);
+      setGameSpeaker(resolveSpeaker(lineObj));
+      if (lineObj.audio)  playBgm(lineObj.audio);
+      if ('sprite' in lineObj) setSprite(lineObj.sprite);
+      const contEl = document.getElementById("game-continue");
+      if (lineObj.coinFlip) {
+        if (contEl) contEl.style.visibility = "visible";
+        pendingAdvance = () => { pendingAdvance = null; showCoinResult(() => advanceGameScene()); };
+      } else if (lineObj.clawAttack) {
+        showClawAttack(() => advanceGameScene());
+      } else if (lineObj.choices) {
+        const fn = lineObj.choices.some(c => c.explore) ? showExploreChoices : showChoices;
+        fn(lineObj.choices, () => advanceGameScene());
+      } else {
+        if (contEl) contEl.style.visibility = "visible";
+      }
+      return;
+    }
+    stopSfx();
+    gameSceneIndex++;
+    while (gameSceneIndex < gameSceneLines.length && !shouldShowLine(gameSceneLines[gameSceneIndex])) {
+      gameSceneIndex++;
+    }
+    if (gameSceneIndex < gameSceneLines.length) {
+      typeGameLine(gameSceneLines[gameSceneIndex]);
+    } else {
+      finishGameScene();
+    }
+  }
+
+  function onGameSceneClick() { if (!choicesActive()) { if (pendingAdvance) { pendingAdvance(); } else { advanceGameScene(); } } }
+
+  function playSceneDialogue(lines, onComplete) {
+    if (!lines || lines.length === 0) { if (onComplete) onComplete(); return; }
+    gameSceneLines    = lines;
+    gameSceneIndex    = 0;
+    gameSceneActive   = true;
+    gameSceneCallback = onComplete;
+    const box = document.getElementById("game-dialog-box");
+    box.classList.add("dialogue-mode");
+    box.removeEventListener("click", onGameSceneClick);
+    box.addEventListener("click", onGameSceneClick);
+    typeGameLine(lines[0]);
+  }
+
+  function showSceneCard(number, onDone) {
+    if (number === 1 && bgmEl) { bgmEl.pause(); bgmEl = null; }
+    const romanNumerals = ["I", "II", "III", "IV", "V"];
+    const card   = document.getElementById("scene-card");
+    const numEl  = document.getElementById("scene-number");
+    const subEl  = document.getElementById("scene-subtitle");
+    numEl.textContent = "SCENE " + (romanNumerals[number - 1] || number);
+    numEl.classList.remove("vis");
+    subEl.classList.remove("vis");
+    card.style.opacity    = "1";
+    card.style.transition = "";
+    card.classList.add("active");
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      numEl.classList.add("vis");
+      subEl.classList.add("vis");
+    }));
+    setTimeout(() => {
+      card.style.transition = "opacity 0.5s ease";
+      card.style.opacity    = "0";
+      setTimeout(() => {
+        card.classList.remove("active");
+        if (onDone) onDone();
+      }, 500);
+    }, 1800);
+  }
+
+  function showSkipDialogueBtn() {
+    let btn = document.getElementById("skip-dialogue-btn");
+    if (!btn) {
+      btn = document.createElement("button");
+      btn.id = "skip-dialogue-btn";
+      Object.assign(btn.style, {
+        position: "fixed", bottom: "10px", left: "50%", transform: "translateX(-50%)",
+        zIndex: "9999", background: "rgba(0,0,0,0.6)", color: "#fff",
+        border: "1px solid rgba(255,255,255,0.3)", fontFamily: "'VT323', monospace",
+        fontSize: "18px", padding: "2px 14px", cursor: "pointer", opacity: "0.5",
+      });
+      document.body.appendChild(btn);
+    }
+    btn.textContent = "skip dialogue";
+    btn.style.display = "block";
+    btn.onclick = skipToGameplay;
+  }
+
+  function hideSkipDialogueBtn() {
+    const btn = document.getElementById("skip-dialogue-btn");
+    if (btn) btn.style.display = "none";
+  }
+
+  function skipToGameplay() {
+    hideSkipDialogueBtn();
+    clearInterval(gameSceneInterval);
+    gameSceneTyping   = false;
+    gameSceneActive   = false;
+    gameSceneLines    = [];
+    gameSceneCallback = null;
+    pendingAdvance    = null;
+    document.getElementById("game-dialog-box")?.removeEventListener("click", onGameSceneClick);
+    document.getElementById("claw-overlay").style.display       = "none";
+    document.getElementById("coin-result-overlay").style.display = "none";
+    document.getElementById("choice-overlay")?.classList.remove("active");
+    const contEl = document.getElementById("game-continue");
+    if (contEl) contEl.style.visibility = "hidden";
+    document.getElementById("game-dialog-text").textContent = "";
+    setGameSpeaker("Mafu");
+    setSprite("neutral");
+    fadeBgmOut(900, () => beginRound(s => startTimer(s)));
+  }
+
+  function hideGameUI() {
+    document.querySelector(".game-hud")?.classList.remove("ui-vis");
+    document.querySelector(".proposition-banner")?.classList.remove("ui-vis");
+    document.querySelector(".game-input-area")?.classList.remove("ui-vis");
+  }
+
+  function revealGameUI() {
+    document.getElementById("game-dialog-box")?.classList.remove("dialogue-mode");
+    document.querySelector(".game-hud")?.classList.add("ui-vis");
+    document.querySelector(".proposition-banner")?.classList.add("ui-vis");
+    document.querySelector(".game-input-area")?.classList.add("ui-vis");
+    const propLabel = document.getElementById("prop-label");
+    if (propLabel && state.side && !state.activeTask) propLabel.textContent = `You argue ${state.side}:`;
+  }
+
+  function init() {
+    stopTimer();
+    state = {
+      proposition: PROPOSITIONS[Math.floor(Math.random() * PROPOSITIONS.length)],
+      side: Math.random() < 0.5 ? "FOR" : "AGAINST",
+      activeTask: null,
+      round: 1,
+      totalScore: 0,
+      history: [],
+      loading: false,
+      gameOver: false,
+    };
+
+    document.getElementById("proposition").textContent = "\u201c" + state.proposition + "\u201d";
+    document.getElementById("round-label").textContent = "Round 1 of 3";
+    document.getElementById("total-score").textContent = "0";
+    document.getElementById("transcript").innerHTML = "";
+    document.getElementById("arg-input").value = "";
+    document.getElementById("arg-input").disabled = false;
+    document.getElementById("arg-input").classList.remove("has-bad-char");
+    document.getElementById("char-count").textContent = "0";
+    document.getElementById("char-count-wrap").classList.remove("over");
+    document.getElementById("error-msg").textContent = "";
+    document.getElementById("submit-btn").disabled = false;
+    const mirrorEl = document.getElementById("input-mirror");
+    if (mirrorEl) mirrorEl.innerHTML = "";
+    inputBlocked = false;
+
+    const old = document.getElementById("verdict-section");
+    if (old) old.remove();
+
+    lastJudgeHtml = "";
+    activeCurse   = null;
+    applyCharLimit(BASE_CHAR_LIMIT);
+    const reminderEl = document.getElementById("curse-reminder");
+    if (reminderEl) reminderEl.textContent = "";
+    const spriteEl = document.getElementById("judge-sprite");
+    if (spriteEl) spriteEl.style.opacity = "0";
+    hideGameUI();
+    const skipBtn = document.getElementById("debug-skip-btn");
+    if (skipBtn) skipBtn.style.display = "none";
+
+    showSceneCard(1, () => {
+      showSkipDialogueBtn();
+      playSceneDialogue(getSceneLines(1), () => {
+        hideSkipDialogueBtn();
+        document.getElementById("game-dialog-text").textContent = "";
+        setGameSpeaker("Mafu");
+        fadeBgmOut(900, () => beginRound(s => startTimer(s)));
+      });
+    });
+  }
+
+  // ─────────────────────────────────────────
+  // DOM HELPERS
+  // ─────────────────────────────────────────
+  let lastJudgeHtml = "";
+
+  function setSprite(mood) {
+    const el = document.getElementById("judge-sprite");
+    if (!el) return;
+    if (mood) {
+      el.src = `sprites/${mood}.png`;
+      el.style.opacity = "1";
+    } else {
+      el.style.opacity = "0";
+    }
+  }
+
+  function addJudgeMessage(text, score, onDone) {
+    const el = document.getElementById("game-dialog-text");
+    el.textContent = "";
+    lastJudgeHtml  = "";
+
+    if (score != null) {
+      if (score >= 8)      setSprite("happy");
+      else if (score >= 4) setSprite("neutral");
+      else                 setSprite("sad");
+    }
+
+    let i = 0;
+    const iv = setInterval(() => {
+      el.textContent = text.slice(0, i + 1);
+      i++;
+      if (i >= text.length) {
+        clearInterval(iv);
+        if (score != null) {
+          const pill = document.createElement("div");
+          pill.className   = "game-score-pill";
+          pill.textContent = `Round score: ${score} / 10`;
+          el.appendChild(pill);
+        }
+        lastJudgeHtml = el.innerHTML;
+        if (onDone) onDone();
+      }
+    }, 28);
+  }
+
+  function showScoreFloat(score) {
+    const el = document.createElement("div");
+    el.className = "score-float";
+    el.textContent = `+${score}`;
+    document.body.appendChild(el);
+    el.addEventListener("animationend", () => el.remove());
+  }
+
+  function addUserMessage(text) {
+    // kept for API history compat — no visible output in new layout
+  }
+
+  function showThinking() {
+    document.getElementById("game-dialog-text").innerHTML =
+      `<span style="color:#888;font-style:italic">The judge deliberates&ensp;</span>` +
+      `<span class="dot-pulse"><span></span><span></span><span></span></span>`;
+  }
+
+  function hideThinking() {
+    document.getElementById("game-dialog-text").innerHTML = lastJudgeHtml;
+  }
+
+  function scrollTranscript() { /* no-op — transcript is hidden */ }
+
+  function escapeHtml(str) {
+    return str
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function startQuiz() {
+    playBgm("bgm/fastpaced.mp3");
+    const shuffled = [...QUIZ_QUESTIONS].sort(() => Math.random() - 0.5);
+    quizQuestions = shuffled.slice(0, 5);
+    quizIndex = 0;
+    quizCorrect = 0;
+    document.getElementById("quiz-panel").classList.add("active");
+    showQuizQuestion();
+  }
+
+  function showQuizQuestion() {
+    clearInterval(quizTimerInterval);
+    const q = quizQuestions[quizIndex];
+    document.getElementById("quiz-progress").textContent = `Q ${quizIndex + 1} / 5`;
+    document.getElementById("quiz-score-tally").textContent = `${quizCorrect * 2} pts`;
+    document.getElementById("quiz-question-text").textContent = q.q;
+    document.getElementById("quiz-feedback").textContent = "";
+    const letters = ["A", "B", "C", "D"];
+    document.querySelectorAll(".quiz-btn").forEach((btn, i) => {
+      btn.classList.remove("correct", "wrong");
+      btn.disabled = false;
+      btn.querySelector(".quiz-letter").textContent = letters[i];
+      btn.querySelector(".quiz-btn-text").textContent = q.choices[i];
+    });
+    let secs = 10;
+    const qt = document.getElementById("quiz-timer");
+    if (qt) { qt.textContent = secs; qt.classList.remove("urgent"); }
+    quizTimerInterval = setInterval(() => {
+      secs--;
+      if (qt) {
+        qt.textContent = secs;
+        if (secs <= 5) qt.classList.add("urgent");
+      }
+      if (secs <= 3 && secs > 0) flashTimerNumber(secs);
+      if (secs <= 0) {
+        clearInterval(quizTimerInterval);
+        selectQuizAnswer(-1);
+      }
+    }, 1000);
+  }
+
+  function selectQuizAnswer(idx) {
+    clearInterval(quizTimerInterval);
+    const q = quizQuestions[quizIndex];
+    document.querySelectorAll(".quiz-btn").forEach(b => { b.disabled = true; });
+    const correct = idx === q.answer;
+    const timedOut = idx === -1;
+    if (!timedOut) document.querySelectorAll(".quiz-btn")[idx].classList.add(correct ? "correct" : "wrong");
+    document.querySelectorAll(".quiz-btn")[q.answer].classList.add("correct");
+    if (correct) quizCorrect++;
+    const fb = document.getElementById("quiz-feedback");
+    fb.textContent = timedOut ? "✗ Time's up." : correct ? "✓ Correct." : "✗ Wrong.";
+    fb.style.color  = correct ? "#ffe87c" : "#cc2222";
+    document.getElementById("quiz-score-tally").textContent = `${quizCorrect * 2} pts`;
+    setTimeout(() => {
+      quizIndex++;
+      if (quizIndex < 5) {
+        showQuizQuestion();
+      } else {
+        const pts = quizCorrect * 2;
+        state.totalScore += pts;
+        document.getElementById("total-score").textContent = state.totalScore;
+        document.getElementById("quiz-panel").classList.remove("active");
+        fadeBgmOut(700, () => {
+          const postLines = getPostQuizLines(quizCorrect);
+          const verdicts = [
+            "Impressive. For a mortal.",
+            "You know your hell. Congratulations, I guess.",
+            "Passable. Don't let it go to your head.",
+            "You tried. That's... something.",
+            "I've seen worse. Barely.",
+          ];
+          const verdictText = verdicts[Math.min(4, 5 - quizCorrect)];
+          const box = document.getElementById("game-dialog-box");
+          box.classList.add("dialogue-mode");
+          playSceneDialogue(postLines, () => {
+            state.gameOver = true;
+            showVerdict(state.totalScore, verdictText);
+          });
+        });
+      }
+    }, 1400);
+  }
+
+  document.querySelectorAll(".quiz-btn").forEach(btn => {
+    btn.addEventListener("click", () => selectQuizAnswer(parseInt(btn.dataset.idx)));
+  });
+
+  function showVerdict(totalScore, verdictText) {
+    const wrap = document.body;
+    const section = document.createElement("div");
+    section.id = "verdict-section";
+
+    let title, emoji;
+    if (totalScore >= 25)      { title = "Acquitted by Brilliance";  emoji = "🏆"; }
+    else if (totalScore >= 18) { title = "Reluctantly Impressed";    emoji = "⚖"; }
+    else if (totalScore >= 12) { title = "Mediocre at Best";         emoji = "📜"; }
+    else                       { title = "Case Dismissed";           emoji = "🔨"; }
+
+    section.innerHTML = `
+      <div class="verdict-card">
+        <div class="verdict-title">${emoji} ${title}</div>
+        <div class="verdict-score">${totalScore} / 30</div>
+        <div class="verdict-text">${escapeHtml(verdictText)}</div>
+      </div>
+      <button class="new-case-btn" onclick="init()">New case \u2192</button>`;
+    wrap.appendChild(section);
+  }
+
+  // ─────────────────────────────────────────
+  // SUBMIT
+  // ─────────────────────────────────────────
+  async function submitArgument(timedOut = false) {
+    const input   = document.getElementById("arg-input");
+    const errEl   = document.getElementById("error-msg");
+    const arg     = timedOut ? (input.value.trim() || "[silence]") : input.value.trim();
+
+    if (!timedOut && !arg) { errEl.textContent = "You must state an argument, counselor."; return; }
+    if (state.loading || state.gameOver) return;
+    if (!timedOut && activeCurse) {
+      const violation = activeCurse.validate(arg);
+      if (violation) { errEl.textContent = violation; return; }
+    }
+
+    stopTimer();
+
+    errEl.textContent = "";
+    state.loading = true;
+    document.getElementById("submit-btn").disabled = true;
+
+    addUserMessage(arg);
+    input.value = "";
+    input.classList.remove("has-bad-char");
+    const _m = document.getElementById("input-mirror");
+    if (_m) _m.innerHTML = "";
+    inputBlocked = false;
+    document.getElementById("char-count").textContent = "0";
+    showThinking();
+
+    const isLastRound = state.round === 3;
+
+    const systemPrompt = `You are Mafu. Tiefling. Heir to a hell-dynasty of tormentors — generations of meticulous, professional suffering. You were raised to carry that on. You do. But you're exhausted by it, and lately you've been trying something different: running little games with the damned instead of just hurting them. This is one of those games. You didn't ask for opinions on whether it's a good idea.
+
+You are terse. You do not explain yourself. You speak in short, dry sentences — often just a few words. You're not cruel for sport; you're tired. Occasionally something genuinely surprises or annoys you and it shows, briefly. You grade on feeling more than logic.
+
+${state.activeTask
+      ? `The defendant has been given a creative task: "${state.activeTask.prompt}"`
+      : `The defendant is arguing ${state.side} the proposition: "${state.proposition}"`}
+
+This is round ${state.round} of 3.${isLastRound ? " This is the FINAL round." : ""}
+
+Respond ONLY with a valid JSON object — no markdown, no preamble — with these fields:
+- "ruling": 1-2 sentences MAX, under 90 characters. Terse and dry. No speeches. React like someone who has seen everything and is only mildly paying attention — unless something actually gets to you.
+- "score": Integer 1-10. Grade on gut feeling. 9-10 for anything that genuinely surprises or unsettles you. 7-8 for something that at least has personality. 5-6 for passable. 1-3 for blank, incoherent, or painfully dull.${state.activeTask?.haiku ? " It's a haiku — if it ignores 5-7-5 structure, score 3 or below. Good dark imagery can still earn points within that." : state.activeTask ? " Personality and surprise over correctness." : ""}
+- "scoreReason": Two or three words. (e.g. ${state.activeTask ? '"almost interesting"' : '"technically fine, soulless"'})${isLastRound ? '\n- "verdict": 1-2 sentences, under 90 characters. Sum up their whole run. Stay in character.' : ""}`;
+
+    const messages = [
+      ...state.history,
+      { role: "user", content: arg },
+    ];
+
+    try {
+      const res = await fetch("http://localhost:3001/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type":         "application/json",
+          "x-api-key":            API_KEY,
+          "anthropic-version":    "2023-06-01",
+          "anthropic-dangerous-request-origin": "user-owned-web-app",
+        },
+        body: JSON.stringify({
+          model:      "claude-sonnet-4-6",
+          max_tokens: 1000,
+          system:     systemPrompt,
+          messages,
+        }),
+      });
+
+      const data = await res.json();
+      console.log("API response:", res.status, data);
+      hideThinking();
+
+      if (!res.ok || data.error) {
+        const msg = data.error?.message || JSON.stringify(data);
+        errEl.textContent = `API error ${res.status}: ${msg}`;
+        console.error("API error:", res.status, data);
+        state.loading = false;
+        document.getElementById("submit-btn").disabled = false;
+        startTimer();
+        return;
+      }
+
+      const raw = data.content?.[0]?.text || "{}";
+      let parsed;
+      try {
+        parsed = JSON.parse(raw.replace(/```json|```/g, "").trim());
+      } catch {
+        errEl.textContent = "The judge was struck speechless. Try again.";
+        state.loading = false;
+        document.getElementById("submit-btn").disabled = false;
+        startTimer();
+        return;
+      }
+
+      const score = Math.min(10, Math.max(1, parseInt(parsed.score) || 5));
+      state.totalScore += score;
+      document.getElementById("total-score").textContent = state.totalScore;
+
+      state.history.push({ role: "user",      content: arg });
+      state.history.push({ role: "assistant", content: raw });
+
+      document.getElementById("submit-btn").disabled = true;
+      document.getElementById("arg-input").disabled  = true;
+
+      addJudgeMessage(parsed.ruling || "…", score, () => {
+        showScoreFloat(score);
+        const contEl = document.getElementById("game-continue");
+        if (contEl) contEl.style.visibility = "visible";
+
+        const box = document.getElementById("game-dialog-box");
+        const advanceAfterRuling = () => {
+          pendingAdvance = null;
+          box.removeEventListener("click", advanceAfterRuling);
+          if (contEl) contEl.style.visibility = "hidden";
+
+          if (isLastRound) {
+            state.gameOver = true;
+            stopTimer();
+            showVerdict(state.totalScore, parsed.verdict || "The court has spoken.");
+          } else {
+            state.round++;
+            document.getElementById("round-label").textContent = `Round ${state.round} of 3`;
+            if (state.round === 2) {
+              state.activeTask = TASKS[Math.floor(Math.random() * TASKS.length)];
+            } else {
+              state.activeTask = null;
+            }
+            const startNextScene = () => {
+              hideGameUI();
+              playSceneDialogue(getSceneLines(state.round), () => {
+                document.getElementById("game-dialog-text").textContent = "";
+                setGameSpeaker("Mafu");
+                document.getElementById("submit-btn").disabled = false;
+                document.getElementById("arg-input").disabled  = false;
+                document.getElementById("error-msg").textContent = "";
+                fadeBgmOut(900, () => state.round === 3 ? startQuiz() : beginRound(s => startTimer(s)));
+              });
+            };
+            if (state.round === 2 || state.round === 3) {
+              startNextScene();
+            } else {
+              showSceneCard(state.round, startNextScene);
+            }
+          }
+        };
+        pendingAdvance = advanceAfterRuling;
+        box.addEventListener("click", advanceAfterRuling);
+      });
+
+    } catch (err) {
+      hideThinking();
+      console.error("Fetch failed:", err);
+      errEl.textContent = "Network error: " + err.message;
+      document.getElementById("submit-btn").disabled = false;
+      startTimer();
+    }
+
+    state.loading = false;
+  }
+
+  // ─────────────────────────────────────────
+  // EVENT LISTENERS
+  // ─────────────────────────────────────────
+  const argInput = document.getElementById("arg-input");
+
+  function updateInputMirror() {
+    const ta      = document.getElementById("arg-input");
+    const mirror  = document.getElementById("input-mirror");
+    if (!mirror) return;
+    const pattern    = activeCurse?.forbiddenChar;
+    const maxWordLen = activeCurse?.forbiddenWordLen;
+    const badWordFn  = activeCurse?.badWord;
+
+    if (!pattern && !maxWordLen && !badWordFn) {
+      mirror.innerHTML = "";
+      ta.classList.remove("has-bad-char");
+      inputBlocked = false;
+      return;
+    }
+
+    const text = ta.value;
+    let hasBad = false;
+    let html = "";
+
+    if (pattern) {
+      html = [...text].map(ch => {
+        if (pattern.test(ch)) {
+          hasBad = true;
+          const safe = ch === "<" ? "&lt;" : ch === "&" ? "&amp;" : ch;
+          return `<span class="bad-char">${safe}</span>`;
+        }
+        return ch === "<" ? "&lt;" : ch === "&" ? "&amp;" : ch;
+      }).join("");
+    } else {
+      const isWordBad = maxWordLen
+        ? seg => seg.replace(/[^a-zA-Z]/g, "").length > maxWordLen
+        : seg => badWordFn(seg);
+      const blockOnComplete = activeCurse?.blockOnComplete;
+      const segments = text.split(/(\s+)/);
+      const textEndsWithSpace = /\s$/.test(text);
+      const inProgressIdx = textEndsWithSpace ? -1 : segments.length - 1;
+      let hasCommittedBad = false;
+      html = segments.map((seg, i) => {
+        if (/^\s+$/.test(seg)) return seg;
+        const safe = seg.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+        if (isWordBad(seg)) {
+          hasBad = true;
+          if (!blockOnComplete || i !== inProgressIdx) hasCommittedBad = true;
+          return `<span class="bad-word">${safe}</span>`;
+        }
+        return safe;
+      }).join("");
+      if (blockOnComplete) inputBlocked = hasCommittedBad;
+    }
+
+    if (hasBad) {
+      mirror.innerHTML = html;
+      if (inputBlocked) {
+        document.getElementById("error-msg").textContent =
+          pattern ? "Delete the forbidden letter first!" :
+          (activeCurse?.blockMsg || "Fix that word first!");
+      }
+    } else {
+      mirror.innerHTML = "";
+    }
+    ta.classList.toggle("has-bad-char", hasBad);
+    if (!activeCurse?.blockOnComplete) inputBlocked = hasBad;
+  }
+
+  argInput.addEventListener("input", function () {
+    const len   = this.value.length;
+    const limit = activeCurse?.charLimit || BASE_CHAR_LIMIT;
+    document.getElementById("char-count").textContent = len;
+    document.getElementById("char-count-wrap").classList.toggle("over", len >= limit - 5);
+    if (!inputBlocked) document.getElementById("error-msg").textContent = "";
+    updateInputMirror();
+  });
+
+  document.getElementById("arg-input").addEventListener("keydown", function (e) {
+    if (inputBlocked) {
+      const allowed = ["Backspace","Delete","ArrowLeft","ArrowRight","ArrowUp","ArrowDown","Tab","Home","End"];
+      if (!allowed.includes(e.key)) e.preventDefault();
+      return;
+    }
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      submitArgument();
+    }
+  });
+
+  document.getElementById("submit-btn").addEventListener("click", submitArgument);
+
+  // ─────────────────────────────────────────
+  // INTRO — line-by-line typewriter + RPG menu
+  // ─────────────────────────────────────────
+  // ── INTRO LINES ──────────────────────────────────────
+  // speaker: null = narration (no nameplate)
+  //          "[name]" = resolves to playerName
+  //          any string = shown literally ("???", "Mafu", …)
+  // flash: true = white screen flash when this line finishes
+  // nameEntry: true = show name input after this line finishes
+  // [name] in text is replaced with playerName at render time
+  // ─────────────────────────────────────────────────────
+  const INTRO_LINES = [
+    { text: "...",                                                              speaker: null },
+    { text: "'Ugh...'",                                                        speaker: null, audio: "bgm/intro-ambience.mp3" },
+    { text: "'Where am I?'",                                                   speaker: null },
+    { text: "Your head spins, and your eyes struggle to focus.",               speaker: null },
+    { text: "The air smells faintly of brimstone and a hint of ...",           speaker: null },
+    { text: "Burnt toast?",                                                    speaker: null },
+    { text: "Your skin feels sticky.",                                         speaker: null },
+    { text: "You try to move, but your limbs feel heavy; as if weighed down by unseen chains.", speaker: null },
+    { text: "A bright light shines down, its heat unbearable.",                speaker: null, flash: true, sfx: "sfx/spotlight.mp3" },
+    { text: "Your name, hell-bound soul?",                                     speaker: "???", nameEntry: true, jitter: true, typeSpeed: 70 },
+    { text: "[name].",                                                         speaker: "[name]" },
+    { text: "...",                                                             speaker: "???" },
+    { text: "...Wait, [name]?",                                                speaker: "???", pauseBgm: true },
+    { text: "You hear a ruffling of papers."                                  , speaker: null, sfx: "sfx/flipping.mp3" },
+    { text: "Well, uhm, [name], I was expecting... someone else.",             speaker: "???", resumeBgm: true },
+    { text: "...What did this one do exactly?",                                speaker: "???" },
+    { text: "There seem to be a couple of uncertain whispers.",                speaker: null },
+    { text: "What crime brings you before this court?",                        speaker: "???",
+      choices: [
+        { label: "Arson."                   },
+        { label: "Mail fraud."              },
+        { label: '"I didn\'t do anything!"' },
+        { label: "..."                      },
+      ]
+    },
+    { text: "[choice]",                                                        speaker: "[name]" },
+    // ── Arson branch ──────────────────────────────────────
+    { text: "Arson!",                                                          speaker: "???",           onlyIf: "Arson." },
+    { text: "Are you sure?",                                                   speaker: "???",           onlyIf: "Arson." },
+    { text: "I guess it's fitting that you're in hell, you know.",             speaker: "???",           onlyIf: "Arson." },
+    // ── Mail fraud branch ──────────────────────────────────
+    { text: "Mail fraud.",                                                     speaker: "???",           onlyIf: "Mail fraud." },
+    { text: "Really?",                                                         speaker: "???",           onlyIf: "Mail fraud." },
+    { text: "She seems to mutter a curse under her breath.",                   speaker: null,            onlyIf: "Mail fraud." },
+    // ── Innocent branch ────────────────────────────────────
+    { text: "...",                                                             speaker: "???",           onlyIf: '"I didn\'t do anything!"' },
+    { text: "They all say that.",                                              speaker: "???",           onlyIf: '"I didn\'t do anything!"' },
+    // ── Silence branch ─────────────────────────────────────
+    { text: "...",                                                             speaker: "???",           onlyIf: "..." },
+    { text: "This is a little awkward.",                                       speaker: "???",           onlyIf: "..." },
+    // ── Common continuation ────────────────────────────────
+    { text: "Hmm.",                                                            speaker: "???" },
+    { text: "Well, I'm going to be real with you for a second, [name].",        speaker: "???" },
+    { text: "I don't have your name on my list.",                              speaker: "???" },
+    { text: "But protocol is protocol, you see, so I'm afraid we both don't have much of a choice.",    speaker: "???" },
+    { text: "You're going to be treated just like any other soul here.",  speaker: "???" },
+    { text: "If that's okay with you...",                 speaker: "???" },
+  ];
+
+
+  const FLASH_LINE = INTRO_LINES.findIndex(l => l.flash);
+  const NAME_LINE  = INTRO_LINES.findIndex(l => l.nameEntry);
+
+  let introLineIndex  = 0;
+  let introTyping     = false;
+  let introMenuOpen   = false;
+  let introMenuIndex  = 0;
+  let introTypeInterval = null;
+
+  let choiceIndex    = 0;
+  let currentChoices = [];
+
+  let choiceCallback = null;
+
+  function showChoices(choices, onSelect) {
+    choiceCallback = onSelect || null;
+    currentChoices = choices;
+    choiceIndex = 0;
+    const list = document.getElementById("choice-list");
+    list.innerHTML = "";
+    choices.forEach((c, i) => {
+      const div = document.createElement("div");
+      div.className = "choice-item" + (i === 0 ? " selected" : "");
+      div.textContent = (i === 0 ? "▶ " : "  ") + c.label;
+      div.addEventListener("click", (e) => {
+        e.stopPropagation();
+        choiceIndex = i;
+        selectChoice();
+      });
+      list.appendChild(div);
+    });
+    document.getElementById("choice-overlay").classList.add("active");
+  }
+
+  function updateChoiceCursor() {
+    document.querySelectorAll(".choice-item").forEach((item, i) => {
+      item.classList.toggle("selected", i === choiceIndex);
+      item.textContent = (i === choiceIndex ? "▶ " : "  ") + currentChoices[i].label;
+    });
+  }
+
+  function shouldShowLine(lineObj) {
+    if (!lineObj.onlyIf) return true;
+    const conds = Array.isArray(lineObj.onlyIf) ? lineObj.onlyIf : [lineObj.onlyIf];
+    return conds.includes(playerChoice);
+  }
+
+  function advanceToNextLine() {
+    introLineIndex++;
+    while (introLineIndex < INTRO_LINES.length && !shouldShowLine(INTRO_LINES[introLineIndex])) {
+      introLineIndex++;
+    }
+    if (introLineIndex < INTRO_LINES.length) {
+      typeIntroLine(introLineIndex);
+    } else {
+      showIntroMenu();
+    }
+  }
+
+  function selectChoice() {
+    playerChoice = currentChoices[choiceIndex].label;
+    document.getElementById("choice-overlay").classList.remove("active");
+    if (choiceCallback) {
+      const cb = choiceCallback;
+      choiceCallback = null;
+      cb();
+    } else {
+      advanceToNextLine();
+    }
+  }
+
+  function choicesActive() {
+    return document.getElementById("choice-overlay").classList.contains("active");
+  }
+
+  function showExploreChoices(choices, onFinal) {
+    const remaining = choices.filter(c => !c._used);
+    showChoices(remaining, () => {
+      const selected = remaining.find(c => c.label === playerChoice);
+      if (selected && selected.explore && selected.lines && selected.lines.length) {
+        selected._used = true;
+        // save main game scene state
+        const savedLines    = gameSceneLines;
+        const savedIndex    = gameSceneIndex;
+        const savedCallback = gameSceneCallback;
+        playSceneDialogue(selected.lines, () => {
+          // restore main game scene state
+          gameSceneLines    = savedLines;
+          gameSceneIndex    = savedIndex;
+          gameSceneCallback = savedCallback;
+          gameSceneActive   = true;
+          const box = document.getElementById("game-dialog-box");
+          box.removeEventListener("click", onGameSceneClick);
+          box.addEventListener("click", onGameSceneClick);
+          // recurse with remaining options
+          showExploreChoices(choices, onFinal);
+        });
+      } else if (selected && selected.lines && selected.lines.length) {
+        const savedLines    = gameSceneLines;
+        const savedIndex    = gameSceneIndex;
+        const savedCallback = gameSceneCallback;
+        playSceneDialogue(selected.lines, () => {
+          gameSceneLines    = savedLines;
+          gameSceneIndex    = savedIndex;
+          gameSceneCallback = savedCallback;
+          gameSceneActive   = true;
+          const box = document.getElementById("game-dialog-box");
+          box.removeEventListener("click", onGameSceneClick);
+          box.addEventListener("click", onGameSceneClick);
+          onFinal();
+        });
+      } else {
+        onFinal();
+      }
+    });
+  }
+
+  let bgmEl = null;
+  let bgmMuted = false;
+
+  function toggleMute() {
+    bgmMuted = !bgmMuted;
+    if (bgmEl) bgmEl.volume = bgmMuted ? 0 : 0.5;
+    const btn = document.getElementById("mute-btn");
+    btn.textContent = bgmMuted ? "✕♪" : "♪";
+    btn.classList.toggle("muted", bgmMuted);
+  }
+
+  function playBgm(src) {
+    if (bgmEl) { bgmEl.pause(); bgmEl = null; }
+    bgmEl = new Audio(src);
+    bgmEl.loop = true;
+    bgmEl.volume = bgmMuted ? 0 : 0.5;
+    bgmEl.play().catch(() => {});
+  }
+  let sfxEl = null;
+
+  function playSfx(src) {
+    stopSfx();
+    sfxEl = new Audio(src);
+    sfxEl.volume = 1.0;
+    sfxEl.play().catch(err => console.warn("SFX failed:", src, err));
+  }
+
+  function stopSfx() {
+    if (sfxEl) { sfxEl.pause(); sfxEl.currentTime = 0; sfxEl = null; }
+  }
+  function fadeBgmIn(duration = 1000) {
+    if (!bgmEl) return;
+    if (bgmMuted) { bgmEl.play().catch(() => {}); return; }
+    bgmEl.volume = 0;
+    bgmEl.play().catch(() => {});
+    const target = 0.5;
+    const steps = 40;
+    const interval = duration / steps;
+    const inc = target / steps;
+    const fade = setInterval(() => {
+      if (!bgmEl) { clearInterval(fade); return; }
+      bgmEl.volume = Math.min(bgmEl.volume + inc, target);
+      if (bgmEl.volume >= target) clearInterval(fade);
+    }, interval);
+  }
+
+  function fadeBgmOut(duration = 800, onDone) {
+    if (!bgmEl) { if (onDone) onDone(); return; }
+    const el    = bgmEl;
+    const steps = 30;
+    const dec   = el.volume / steps;
+    const iv    = setInterval(() => {
+      if (bgmEl !== el) { clearInterval(iv); return; }
+      el.volume = Math.max(0, el.volume - dec);
+      if (el.volume <= 0) {
+        clearInterval(iv);
+        el.pause();
+        if (bgmEl === el) bgmEl = null;
+        if (onDone) onDone();
+      }
+    }, duration / steps);
+  }
+
+  function flashScreen() {
+    const el = document.getElementById("flash-overlay");
+    el.style.transition = "none";
+    el.style.opacity = "1";
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      el.style.transition = "opacity 1s ease";
+      el.style.opacity = "0";
+    }));
+  }
+
+  function showNameInput() {
+    const inp = document.getElementById("intro-name-input");
+    inp.style.display = "block";
+    inp.value = "";
+    setTimeout(() => inp.focus(), 50);
+  }
+
+  function resolveLine(lineObj) {
+    return lineObj.text
+      .replace(/\[name\]/g, playerName)
+      .replace(/\[choice\]/g, playerChoice)
+      .replace(/\[side\]/g, state.side || "")
+      .replace(/\[task\]/g, state.activeTask?.prompt || "");
+  }
+
+  function resolveSpeaker(lineObj) {
+    if (!lineObj.speaker) return null;
+    return lineObj.speaker === "[name]" ? playerName : lineObj.speaker;
+  }
+
+  function setSpeaker(lineObj) {
+    const el   = document.getElementById("dialog-speaker");
+    const name = resolveSpeaker(lineObj);
+    if (name) {
+      el.textContent  = name;
+      el.style.display = "block";
+    } else {
+      el.style.display = "none";
+    }
+  }
+
+  function typeIntroLine(lineIndex) {
+    const el     = document.getElementById("intro-dialog-text");
+    const contEl = document.getElementById("intro-continue");
+    const lineObj = INTRO_LINES[lineIndex];
+    const text    = resolveLine(lineObj);
+    let i = 0;
+    introTyping = true;
+    el.textContent = "";
+    contEl.style.visibility = "hidden";
+    setSpeaker(lineObj);
+
+    introTypeInterval = setInterval(() => {
+      if (lineObj.jitter) {
+        const span = document.createElement("span");
+        span.className = "letter-jitter";
+        span.textContent = text[i];
+        span.style.animationDelay = (Math.random() * 0.09).toFixed(3) + "s";
+        el.appendChild(span);
+      } else {
+        el.textContent = text.slice(0, i + 1);
+      }
+      i++;
+      if (i >= text.length) {
+        clearInterval(introTypeInterval);
+        introTyping = false;
+        if (lineObj.audio) playBgm(lineObj.audio);
+        if (lineObj.sfx)   playSfx(lineObj.sfx);
+        if (lineObj.pauseBgm && bgmEl) bgmEl.pause();
+        if (lineObj.resumeBgm && bgmEl) fadeBgmIn();
+        if (lineObj.choices) {
+          showChoices(lineObj.choices);
+        } else if (lineObj.flash) {
+          flashScreen();
+          contEl.style.visibility = "visible";
+        } else if (lineObj.nameEntry) {
+          showNameInput();
+        } else {
+          contEl.style.visibility = "visible";
+        }
+      }
+    }, lineObj.typeSpeed || 32);
+  }
+
+  function advanceIntro() {
+    if (introMenuOpen || choicesActive()) return;
+
+    // still animating — skip to end of current line
+    if (introTyping) {
+      clearInterval(introTypeInterval);
+      introTyping = false;
+      const lineObj = INTRO_LINES[introLineIndex];
+      const skipEl  = document.getElementById("intro-dialog-text");
+      const skipText = resolveLine(lineObj);
+      if (lineObj.jitter) {
+        skipEl.innerHTML = [...skipText].map(ch => {
+          const delay = (Math.random() * 0.09).toFixed(3);
+          return `<span class="letter-jitter" style="animation-delay:${delay}s">${ch}</span>`;
+        }).join("");
+      } else {
+        skipEl.textContent = skipText;
+      }
+      if (lineObj.audio) playBgm(lineObj.audio);
+      if (lineObj.sfx)   playSfx(lineObj.sfx);
+      if (lineObj.pauseBgm && bgmEl) bgmEl.pause();
+      if (lineObj.resumeBgm && bgmEl) bgmEl.play().catch(() => {});
+      if (lineObj.flash) flashScreen();
+      if (lineObj.choices) {
+        showChoices(lineObj.choices);
+      } else if (lineObj.nameEntry) {
+        showNameInput();
+      } else {
+        document.getElementById("intro-continue").style.visibility = "visible";
+      }
+      return;
+    }
+
+    // on name line, name input handles advancing
+    if (INTRO_LINES[introLineIndex].nameEntry) return;
+
+    advanceToNextLine();
+  }
+
+  function showIntroMenu() {
+    introMenuOpen = true;
+    document.getElementById("intro-continue").style.visibility = "hidden";
+    document.getElementById("intro-menu").style.display = "block";
+    document.querySelector(".intro-title-area").style.opacity = "1";
+  }
+
+  function updateMenuCursor() {
+    document.querySelectorAll(".intro-menu-item").forEach((item, i) => {
+      item.classList.toggle("selected", i === introMenuIndex);
+      item.innerHTML = (i === introMenuIndex ? "▶ " : "&nbsp;&nbsp;") + ["Begin", "Flee"][i];
+    });
+  }
+
+  function selectIntroItem() {
+    if (introMenuIndex === 1) {
+      const fleeText = "I know it says you can flee, but where would you even go?";
+      const el = document.getElementById("intro-dialog-text");
+      el.textContent = "";
+      document.getElementById("intro-menu").style.display = "none";
+      introMenuOpen = false;
+      let fi = 0;
+      introTyping = true;
+      const fleeIv = setInterval(() => {
+        el.textContent = fleeText.slice(0, fi + 1);
+        fi++;
+        if (fi >= fleeText.length) {
+          clearInterval(fleeIv);
+          introTyping = false;
+          setTimeout(() => {
+            document.getElementById("intro-menu").style.display = "block";
+            introMenuOpen = true;
+            introMenuIndex = 0;
+            updateMenuCursor();
+          }, 1800);
+        }
+      }, 28);
+    } else {
+      const overlay = document.getElementById("intro-overlay");
+      overlay.style.transition = "opacity 0.35s ease";
+      overlay.style.opacity = "0";
+      setTimeout(() => { overlay.style.display = "none"; }, 350);
+      document.getElementById("player-badge").textContent = playerName;
+      init();
+    }
+  }
+
+  // Click dialog box to advance (but not when name input is focused)
+  document.getElementById("intro-dialog-box").addEventListener("click", () => {
+    if (document.activeElement === document.getElementById("intro-name-input")) return;
+    advanceIntro();
+  });
+
+  // Name input — Enter to submit
+  document.getElementById("intro-name-input").addEventListener("keydown", (e) => {
+    if (e.key !== "Enter") return;
+    e.preventDefault();
+    const val = document.getElementById("intro-name-input").value.trim();
+    if (!val) return;
+    playerName = val;
+    document.getElementById("intro-name-input").style.display = "none";
+    advanceToNextLine();
+  });
+
+  // Click menu items
+  document.querySelectorAll(".intro-menu-item").forEach((item) => {
+    item.addEventListener("click", (e) => {
+      e.stopPropagation();
+      introMenuIndex = parseInt(item.dataset.index);
+      updateMenuCursor();
+      selectIntroItem();
+    });
+  });
+
+  // Game scene dialogue keyboard nav (Space/Enter when intro is done)
+  document.addEventListener("keydown", (e) => {
+    if (document.getElementById("intro-overlay").style.display !== "none") return;
+    if (document.activeElement === document.getElementById("arg-input")) return;
+    if (document.getElementById("quiz-panel").classList.contains("active")) {
+      const map = { "a": 0, "b": 1, "c": 2, "d": 3, "1": 0, "2": 1, "3": 2, "4": 3 };
+      const idx = map[e.key.toLowerCase()];
+      if (idx !== undefined) {
+        const btn = document.querySelectorAll(".quiz-btn")[idx];
+        if (btn && !btn.disabled) { e.preventDefault(); selectQuizAnswer(idx); }
+      }
+      return;
+    }
+    if (choicesActive()) {
+      if (e.key === "ArrowDown" || e.key === "s") {
+        choiceIndex = (choiceIndex + 1) % currentChoices.length;
+        updateChoiceCursor();
+      } else if (e.key === "ArrowUp" || e.key === "w") {
+        choiceIndex = (choiceIndex - 1 + currentChoices.length) % currentChoices.length;
+        updateChoiceCursor();
+      } else if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        selectChoice();
+      }
+      return;
+    }
+    if (pendingAdvance) {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pendingAdvance(); }
+      return;
+    }
+    if (!gameSceneActive) return;
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); advanceGameScene(); }
+  });
+
+  // Keyboard nav
+  document.addEventListener("keydown", (e) => {
+    if (document.getElementById("intro-overlay").style.display === "none") return;
+
+    // Choice navigation takes priority
+    if (choicesActive()) {
+      if (e.key === "ArrowDown" || e.key === "s") {
+        choiceIndex = (choiceIndex + 1) % currentChoices.length;
+        updateChoiceCursor();
+      } else if (e.key === "ArrowUp" || e.key === "w") {
+        choiceIndex = (choiceIndex - 1 + currentChoices.length) % currentChoices.length;
+        updateChoiceCursor();
+      } else if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        selectChoice();
+      }
+      return;
+    }
+
+    if (!introMenuOpen) {
+      if (document.activeElement === document.getElementById("intro-name-input")) return;
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); advanceIntro(); }
+      return;
+    }
+
+    if (e.key === "ArrowDown" || e.key === "s") {
+      introMenuIndex = (introMenuIndex + 1) % 2;
+      updateMenuCursor();
+    } else if (e.key === "ArrowUp" || e.key === "w") {
+      introMenuIndex = (introMenuIndex - 1 + 2) % 2;
+      updateMenuCursor();
+    } else if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      selectIntroItem();
+    }
+  });
+
+  typeIntroLine(0);
+
+  // ── DEBUG: skip to scene I ──
+  (function() {
+    const btn = document.createElement("button");
+    btn.id = "debug-skip-btn";
+    btn.textContent = "skip opening";
+    Object.assign(btn.style, {
+      position: "fixed", bottom: "10px", left: "50%", transform: "translateX(-50%)",
+      zIndex: "9999", background: "rgba(0,0,0,0.6)", color: "#fff",
+      border: "1px solid rgba(255,255,255,0.3)", fontFamily: "'VT323', monospace",
+      fontSize: "18px", padding: "2px 14px", cursor: "pointer", opacity: "0.5",
+    });
+    btn.addEventListener("click", () => {
+      btn.style.display = "none";
+      const typedName = document.getElementById("intro-name-input").value.trim();
+      playerName = typedName || "Player";
+      const overlay = document.getElementById("intro-overlay");
+      overlay.style.display = "none";
+      document.getElementById("player-badge").textContent = playerName;
+      init();
+    });
+    document.body.appendChild(btn);
+  })();
+</script>
+</body>
+</html>
