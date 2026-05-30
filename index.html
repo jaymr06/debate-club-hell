@@ -1566,6 +1566,7 @@
       name: "GREED (I)",
       desc: "Every word must be at least 4 letters.",
       blockMsg: "That word is too short — 4+ letters required!",
+      blockOnComplete: true,
       badWord: w => { const c = w.replace(/[^a-zA-Z]/g, ""); return c.length > 0 && c.length < 4; },
       validate: t => {
         const bad = t.trim().split(/\s+/).find(w => { const c = w.replace(/[^a-zA-Z]/g, ""); return c.length > 0 && c.length < 4; });
