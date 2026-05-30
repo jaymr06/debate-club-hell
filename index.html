@@ -1635,7 +1635,7 @@
 
   function startTimer(seconds) {
     clearInterval(timerInterval);
-    clearRemarkTimers();
+    clearRemarkTimers(); // also resets lastRemarkSecond
     timerSeconds = seconds !== undefined ? seconds : ROUND_SECONDS;
     const display = document.getElementById("timer-display");
     display.textContent = timerSeconds;
@@ -1657,11 +1657,12 @@
         display.classList.add("urgent");
         flashTimerNumber(timerSeconds);
       }
-      if (remarkTriggers.has(timerSeconds)) {
+      if (remarkTriggers.has(timerSeconds) && lastRemarkSecond - timerSeconds >= 5) {
         let idx;
         do { idx = Math.floor(Math.random() * MAFU_REMARKS.length); }
         while (usedRemarks.has(idx) && usedRemarks.size < MAFU_REMARKS.length);
         usedRemarks.add(idx);
+        lastRemarkSecond = timerSeconds;
         showMafuRemark(MAFU_REMARKS[idx]);
       }
       if (timerSeconds <= 0) {
@@ -1929,8 +1930,8 @@
     "If you do really well, maybe I'll let you out early. Just kidding, don't get any ideas.",
   ];
 
-  let remarkTimeouts = [];
   let remarkTypingInterval = null;
+  let lastRemarkSecond     = Infinity;
 
   function showMafuRemark(text) {
     const textEl = document.getElementById("game-dialog-text");
@@ -1944,23 +1945,13 @@
     remarkTypingInterval = setInterval(() => {
       textEl.textContent = text.slice(0, i + 1);
       i++;
-      if (i >= text.length) {
-        clearInterval(remarkTypingInterval);
-        const t = setTimeout(() => {
-          if (!state.loading && !state.gameOver && textEl.textContent === text) {
-            textEl.textContent = "";
-            setGameSpeaker(null);
-          }
-        }, 4000);
-        remarkTimeouts.push(t);
-      }
+      if (i >= text.length) clearInterval(remarkTypingInterval);
     }, 35);
   }
 
   function clearRemarkTimers() {
     clearInterval(remarkTypingInterval);
-    remarkTimeouts.forEach(clearTimeout);
-    remarkTimeouts = [];
+    lastRemarkSecond = Infinity;
   }
 
   // ════════════════════════════════════════════════════════════════════
@@ -2680,10 +2671,8 @@ Respond ONLY with a valid JSON object — no markdown, no preamble — with thes
       const res = await fetch("http://localhost:3001/v1/messages", {
         method: "POST",
         headers: {
-          "Content-Type":         "application/json",
-          "x-api-key":            API_KEY,
-          "anthropic-version":    "2023-06-01",
-          "anthropic-dangerous-request-origin": "user-owned-web-app",
+          "Content-Type":      "application/json",
+          "anthropic-version": "2023-06-01",
         },
         body: JSON.stringify({
           model:      "claude-sonnet-4-6",
