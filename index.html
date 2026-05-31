@@ -2668,7 +2668,7 @@ Respond ONLY with a valid JSON object — no markdown, no preamble — with thes
     ];
 
     try {
-      const res = await fetch("http://localhost:3001/v1/messages", {
+      const res = await fetch("/api/proxy", {
         method: "POST",
         headers: {
           "Content-Type":      "application/json",
