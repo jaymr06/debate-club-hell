@@ -1,6 +1,6 @@
 # Debate Club from Hell
 
-A browser-based visual novel / party game set in hell, where **Mafu**, yours truly, (the torturer down here), has some other ideas for your punishment.
+A browser-based visual novel / party game set in hell, where **Mafu** (the torturer down here, yours truly), has some other ideas for your punishment.
 
 🔗 **[Play it here](https://debate-club-hell.vercel.app)**
 
@@ -8,7 +8,7 @@ A browser-based visual novel / party game set in hell, where **Mafu**, yours tru
 
 ## About Mafu
 
-Mafu is the torturer on duty. She didn't really choose this job, doesn't fully understand why she does it, and will tell you so if you ask. She's not cruel, just has been on graveyard shift for far too long and getting increasingly tired of running her family's business.. She introduces herself, flips a coin to decide your debate side, drops mid-round remarks, and gives you your score.
+Mafu is the torturer on duty. She didn't really choose this job, nor is fully commited, and will tell you so if you ask. She's not cruel; she's just been on graveyard shift for far too long and has been getting increasingly tired of running her family's business. 
 
 > *"My name is Mafu, I'm the torturer here."*
 > *"I just show up, do my thing, and go home."*
